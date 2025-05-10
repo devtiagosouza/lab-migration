@@ -1,0 +1,35 @@
+program Project1;
+
+{$R *.dres}
+
+uses
+  Vcl.Forms,
+  Unit1 in 'Unit1.pas' {Form1},
+  Model.DBField in 'Engine\Models\Model.DBField.pas',
+  Model.DBTable in 'Engine\Models\Model.DBTable.pas',
+  Model.DBObject in 'Engine\Models\Model.DBObject.pas',
+  DCollections in 'DelphiCollectionsLib\DCollections.pas',
+  Model.DBIndex in 'Engine\Models\Model.DBIndex.pas',
+  Model.DBProcedure in 'Engine\Models\Model.DBProcedure.pas',
+  Model.DBFunction in 'Engine\Models\Model.DBFunction.pas',
+  Model.DBTrigger in 'Engine\Models\Model.DBTrigger.pas',
+  Model.DBGenerator in 'Engine\Models\Model.DBGenerator.pas',
+  Model.DBView in 'Engine\Models\Model.DBView.pas',
+  DBSystemTables in 'Engine\DBSystemTables.pas',
+  MegaMigrator in 'MegaMigrator.pas',
+  SqlResources in 'Engine\SqlResources.pas',
+  FirebirdKeywords in 'Engine\FirebirdKeywords.pas',
+  Sql.Query.Builder in 'Sql.Query.Builder.pas',
+  Sql.Query.Builder.CommandTemplate in 'Sql.Query.Builder.CommandTemplate.pas',
+  Sql.Script.Builder in 'Sql.Script.Builder.pas',
+  Sql.Builder.Interfaces.IQueryBuilder in 'Sql.Builder.Interfaces.IQueryBuilder.pas',
+  Sql.Builder.Interfaces.IScriptBuilder in 'Sql.Builder.Interfaces.IScriptBuilder.pas';
+
+{$R *.res}
+
+begin
+  Application.Initialize;
+  Application.MainFormOnTaskbar := True;
+  Application.CreateForm(TForm1, Form1);
+  Application.Run;
+end.
