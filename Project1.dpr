@@ -19,11 +19,9 @@ uses
   MegaMigrator in 'MegaMigrator.pas',
   SqlResources in 'Engine\SqlResources.pas',
   FirebirdKeywords in 'Engine\FirebirdKeywords.pas',
-  Sql.Query.Builder in 'Sql.Query.Builder.pas',
-  Sql.Query.Builder.CommandTemplate in 'Sql.Query.Builder.CommandTemplate.pas',
-  Sql.Script.Builder in 'Sql.Script.Builder.pas',
-  Sql.Builder.Interfaces.IQueryBuilder in 'Sql.Builder.Interfaces.IQueryBuilder.pas',
-  Sql.Builder.Interfaces.IScriptBuilder in 'Sql.Builder.Interfaces.IScriptBuilder.pas';
+  Sql.Builder in 'Engine\SQLBuilders\Sql.Builder.pas',
+  Sql.Builder.SqlTemplate in 'Engine\SQLBuilders\Sql.Builder.SqlTemplate.pas',
+  Sql.Script.Builder in 'Engine\SQLBuilders\Sql.Script.Builder.pas';
 
 {$R *.res}
 

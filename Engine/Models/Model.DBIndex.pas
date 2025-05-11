@@ -1,7 +1,7 @@
 unit Model.DBIndex;
 
 interface
-  uses Model.DBObject, System.SysUtils, System.StrUtils,System.Classes;
+  uses Model.DBObject, System.SysUtils, System.StrUtils,System.Classes, sql.builder.SqlTemplate;
 
 type TIndexType = (PRIMARY_KEY,FOREIGN_KEY,CHECK,UNIQUE,INDEX);
 
@@ -19,7 +19,7 @@ public
    property IndexName : string read FIndexName write FIndexName;
    property IndexSorting : string read FIndexSorting write FIndexSorting;
 
-   function CreateCommand: string; override;
+   function DDLCreate: string; override;
 
 end;
 
@@ -46,7 +46,7 @@ public
     property IndexName : string read FIndexName write FIndexName;
     property IndexSorting : string read FIndexSorting write FIndexSorting;
 
-    function CreateCommand: string; override;
+    function DDLCreate: string; override;
 
 end;
 
@@ -61,7 +61,7 @@ public
     property TableName: string read FTableName write FTableName;
     property Source: string read FSource write FSource;
 
-    function CreateCommand: string; override;
+    function DDLCreate: string; override;
 end;
 
 
@@ -79,7 +79,7 @@ public
     property IndexName : string read FIndexName write FIndexName;
     property IndexSorting: string read FIndexSorting write FIndexSorting;
 
-    function CreateCommand: string; override;
+    function DDLCreate: string; override;
 end;
 
 
@@ -108,7 +108,7 @@ public
     property Sorting : string read FSorting write FSorting;
 
 
-    function CreateCommand: string; override;
+    function DDLCreate: string; override;
 
 end;
 
@@ -116,31 +116,27 @@ implementation
 
 { TDBIndex }
 
-function TDBIndex.CreateCommand: string;
+function TDBIndex.DDLCreate: string;
 var
  command : TStringList;
+ sql : ISQLTemplate;
 begin
-    command := TStringList.Create;
+  sql := TSQLTemplate.Create('CREATE {UNIQUE} {DESCENDING} INDEX :INDEX_NAME ON :TABLE_NAME :FIELDS;');
 
-   command.Add('CREATE');
-   if (FUnique) then
-       command.Add('UNIQUE');
+  sql.SetPar('UNIQUE',FUnique)
+      .SetPar('DESCENDING',fSorting.ToUpper() = 'DESCENDING')
+      .SetPar('INDEX_NAME', Name,true)
+      .SetPar('TABLE_NAME', TableName,true)
+      .SetPar('FIELDS',string.IsNullOrEmpty(FOnFields) = false,'('+FOnFields+')','COMPUTED BY '+FExpression);
 
-   if (fSorting.ToUpper() = 'DESCENDING') then
-        command.Add(fSorting.ToUpper());
 
-    command.Add('INDEX '+GetFormatedName+' ON '+FTableName);
+      result := sql.AsString();
 
-    if (string.IsNullOrEmpty(FOnFields) = false) then
-           command.Add('('+FOnFields+')')
-      else  command.Add('COMPUTED BY '+FExpression);
-
-    Result := String.join(' ',command.ToStringArray);
 end;
 
 { TDBPrimaryKey }
 
-function TDBPrimaryKey.CreateCommand: string;
+function TDBPrimaryKey.DDLCreate: string;
 const sintax = 'ALTER TABLE %s ADD CONSTRAINT %s PRIMARY KEY (%s)';
 begin
    Result := Format(sintax,[ftableName,GetFormatedName(),FOnFields]);
@@ -153,7 +149,7 @@ end;
 
 { TDBUnique }
 
-function TDBUnique.CreateCommand: string;
+function TDBUnique.DDLCreate: string;
 const sintax = 'ALTER TABLE %s ADD CONSTRAINT %s UNIQUE (%s)';
 begin
    Result := Format(sintax,[ FTableName,Name,FOnFields]);
@@ -165,7 +161,7 @@ end;
 
 { TDBForeignKey }
 
-function TDBForeignKey.CreateCommand: string;
+function TDBForeignKey.DDLCreate: string;
 const sintax = 'ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s(%s)';
 begin
    Result := Format(sintax,[ FTableName,Name,FOnFields, FKTable, FkField]);
@@ -176,7 +172,7 @@ end;
 
 { TDBCheck }
 
-function TDBCheck.CreateCommand: string;
+function TDBCheck.DDLCreate: string;
 const sintax = 'ALTER TABLE %s ADD CONSTRAINT %s %s';
 begin
     Result := Format(sintax,[FTableName,GetFormatedName,FSource]);

@@ -2,7 +2,7 @@ unit Model.DBTable;
 
 interface
   uses Model.DBObject, Model.DBField, Model.DBIndex, Model.DBGenerator, Model.DBTrigger, DCollections,
-  System.Classes, System.StrUtils, System.SysUtils, Sql.Query.Builder.CommandTemplate,Sql.Query.Builder;
+  System.Classes, System.StrUtils, System.SysUtils, Sql.Script.Builder, Sql.Builder;
 
   type TDBTable = class(TDBObject)
 
@@ -16,6 +16,8 @@ interface
     FTriggers: TList<TDBTrigger>;
 
 
+    function GetMaxDigitCount<T: class>(const AList: TList<T>; PropertyGetter: TFunc<T, string>): Integer;
+
   public
       property Fields : TList<TDBField> read FFields write FFields;
       property PrimaryKeys : TList<TDBPrimaryKey> read FPrimaryKeys write FPrimaryKeys;
@@ -25,7 +27,7 @@ interface
       property Indices : TList<TDBIndex> read FIndices write FIndices;
       property Triggers : TList<TDBTrigger> read FTriggers write FTriggers;
 
-      function CreateCommand: string; override;
+      function DDLCreate: string; override;
 
 
       constructor Create(AOwner: TComponent);
@@ -51,142 +53,164 @@ begin
   FTriggers := TList<TDBTrigger>.Create;
 end;
 
-function TDBTable.CreateCommand: string;
-const
-  sintax : string = 'CREATE TABLE %s (' + sLineBreak + '%s' + sLineBreak + ');';
+function TDBTable.DDLCreate: string;
 var
   vField : TDBField;
-  strFields: TStringBuilder;
   i,x: Integer;
-  Script: TStringList;
+  Script: IScriptBuilder;
   primaryKey : TDBPrimaryKey;
   vGenerator : TDBGenerator;
 
-  builder : TCommandTemplate;
-
+  Sql : ISqlBuilder;
+  MaxDigits : integer;
 begin
-  strFields := TStringBuilder.Create;
-  Script := TStringList.Create;
+
+  Script := TScriptBuilder.Create;
 
 
-  
-
-
-
-
+  Script.AppendLine(
+    '/******************************************************************************/'+sLineBreak+
+    '/****                                Tables                                ****/'+sLineBreak+
+    '/******************************************************************************/');
 
 
 
   for I := 0 to Triggers.Count - 1 do begin
         for x := 0 to Triggers[i].Generators.Count - 1 do begin
            vGenerator := Triggers[i].Generators[x];
-           Result := Result+sLineBreak + vGenerator.CreateCommand+';'+sLineBreak;
+
+           Script.AppendLine(vGenerator.DDLCreate);
         end;
   end;
 
 
-  try
-    for i := 0 to Fields.Count - 1 do
+    MaxDigits := GetMaxDigitCount<TDBField>(Fields, function(Item: TDBField): string
+                                                  begin
+                                                    Result := Item.Name;
+                                                  end);
+
+    Sql := TSQLBuilder.Create
+           .AppendLine('CREATE TABLE '+GetFormatedName+' (')
+           .IncIndent;
+
+
+
+    for i := 0 to Pred(Fields.Count) do
     begin
       vField := Fields[i];
-      strFields.AppendFormat('    %s', [vField.CreateCommand]);
+      Sql.AppendLine(vField.GetFullFieldSet(MaxDigits+1));
 
-      if i < Fields.Count - 1 then
-        strFields.Append(',' + sLineBreak);
+      if (i < Pred(Fields.Count)) then
+        Sql.DecIndent.Append(',').IncIndent;
+
     end;
 
+    Sql.DecIndent
+        .AppendLine(');');
 
-    Result := Result+sLineBreak+Format(sintax, [Self.GetFormatedName, strFields.ToString]);
-
-
+    Script.AppendLine(Sql.AsString);
 
 
 
     if (PrimaryKeys.Count > 0) then
     begin
-
-      Result := Result + sLineBreak+sLineBreak+
+      Script.AppendLine(
       '/******************************************************************************/'+sLineBreak+
       '/****                             Primary keys                             ****/'+sLineBreak+
-      '/******************************************************************************/';
+      '/******************************************************************************/');
 
       for I := 0 to PrimaryKeys.Count - 1 do begin
-         Result := Result+sLineBreak +PrimaryKeys[i].CreateCommand+';';
+         Script.AppendLine(PrimaryKeys[i].DDLCreate);
       end;
 
     end;
 
     if (ForeignKeys.Count > 0) then
     begin
-        Result := Result+sLineBreak + sLineBreak+sLineBreak+
+        Script.AppendLine(
         '/******************************************************************************/'+sLineBreak+
         '/****                             Foreign keys                             ****/'+sLineBreak+
-        '/******************************************************************************/';
+        '/******************************************************************************/');
 
       for I := 0 to ForeignKeys.Count - 1 do begin
-         Result := Result+sLineBreak + ForeignKeys[i].CreateCommand+';';
+         Script.AppendLine(ForeignKeys[i].DDLCreate);
       end;
     end;
 
     if (CheckContrainsts.Count > 0) then
     begin
-        Result := Result + sLineBreak+sLineBreak+
+        Script.AppendLine(
         '/******************************************************************************/'+sLineBreak+
         '/****                          Check constraints                           ****/'+sLineBreak+
-        '/******************************************************************************/';
+        '/******************************************************************************/');
 
       for I := 0 to CheckContrainsts.Count - 1 do begin
-         Result := Result+sLineBreak + CheckContrainsts[i].CreateCommand+';';
+         Script.AppendLine(CheckContrainsts[i].DDLCreate);
       end;
     end;
 
     if (UniqueConstraints.Count > 0) then
     begin
-      Result := Result + sLineBreak+sLineBreak+
+      Script.AppendLine(
       '/******************************************************************************/'+sLineBreak+
       '/****                          Unique constraints                          ****/'+sLineBreak+
-      '/******************************************************************************/';
+      '/******************************************************************************/');
 
       for I := 0 to UniqueConstraints.Count - 1 do begin
-         Result := Result+sLineBreak + UniqueConstraints[i].CreateCommand+';';
+         Script.AppendLine(UniqueConstraints[i].DDLCreate);
       end;
     end;
 
     if (Indices.Count > 0) then
     begin
-      Result := Result + sLineBreak+sLineBreak+
+      Script.AppendLine(
       '/******************************************************************************/'+sLineBreak+
       '/****                               Indices                                ****/'+sLineBreak+
-      '/******************************************************************************/';
+      '/******************************************************************************/');
 
       for I := 0 to Indices.Count - 1 do begin
-         Result := Result+sLineBreak + Indices[i].CreateCommand+';';
+         Script.AppendLine(Indices[i].DDLCreate);
       end;
     end;
 
     if (Triggers.Count > 0) then
     begin
+      Script.AppendLine('SET TERM ^ ;');
 
-       Result := Result + sLineBreak+'SET TERM ^ ;';
-
-       Result := Result + sLineBreak+sLineBreak+
+       Script.AppendLine(
       '/******************************************************************************/'+sLineBreak+
       '/****                         Triggers for tables                          ****/'+sLineBreak+
-      '/******************************************************************************/';
+      '/******************************************************************************/');
 
       for I := 0 to Triggers.Count - 1 do begin
-         Result := Result+sLineBreak + Triggers[i].CreateCommand+sLineBreak+'^';
+         Script.AppendLine(Triggers[i].DDLCreate);
+         Script.AppendLine('^');
       end;
 
-      Result := Result+sLineBreak +'SET TERM ; ^';
+      Script.AppendLine('SET TERM ; ^');
 
     end;
 
 
-  finally
-    strFields.Free;
+    result := Script.AsString;
+end;
+
+function TDBTable.GetMaxDigitCount<T>(const AList: TList<T>;
+  PropertyGetter: TFunc<T, string>): Integer;
+var
+  Item: T;
+  MaxLength, LengthNome: Integer;
+begin
+  MaxLength := 0;
+
+  for Item in AList do
+  begin
+    LengthNome := Length(PropertyGetter(Item));  // Calculando o comprimento da propriedade Nome
+    if LengthNome > MaxLength then
+      MaxLength := LengthNome;
   end;
 
+  Result := MaxLength;
 end;
 
 end.

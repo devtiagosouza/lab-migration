@@ -2,11 +2,21 @@ unit Sql.Script.Builder;
 
 interface
 
- uses FirebirdKeywords,Sql.Builder.Interfaces.IScriptBuilder,
- sql.Query.Builder,
-  System.Classes, System.SysUtils, Sql.Builder.Interfaces.IQueryBuilder;
+ uses FirebirdKeywords,System.Classes, System.SysUtils, Sql.Builder;
 
-type TScriptBuilder = class(TInterfacedObject, IScriptBuilder)
+
+
+type IScriptBuilder = interface
+    ['{76D99902-75A6-4609-AD75-B4324D78E417}']
+    function Append(aScriptBuilder : IScriptBuilder) : IScriptBuilder; overload;
+    function Append(aText : string) : IScriptBuilder; overload;
+    function AppendLine(aText : string = '') : IScriptBuilder;
+    function AsString: string;
+  end;
+
+
+
+TScriptBuilder = class(TInterfacedObject, IScriptBuilder)
  private
     FStrings: TStringBuilder;
 
@@ -15,8 +25,6 @@ type TScriptBuilder = class(TInterfacedObject, IScriptBuilder)
     function Append(aText : string) : IScriptBuilder; overload;
     function AppendLine(aText : string = '') : IScriptBuilder;
 
-    function NewSql : TQueryBuilder;
-
     function AsString: string;
     constructor Create();
 
@@ -24,8 +32,6 @@ type TScriptBuilder = class(TInterfacedObject, IScriptBuilder)
 
 implementation
 
-
-  var FQueryBuilder : TQueryBuilder;
 
 
 { TScriptBuilder }
@@ -41,6 +47,8 @@ begin
    FStrings.Append(aText);
    Result := Self;
 end;
+
+
 
 function TScriptBuilder.AppendLine(aText : string = ''): IScriptBuilder;
 begin
@@ -63,10 +71,6 @@ end;
 
 
 
-function TScriptBuilder.NewSql: TQueryBuilder;
-begin
-  FQueryBuilder := TQueryBuilder.Create;
-  Result := FQueryBuilder;
-end;
+
 
 end.

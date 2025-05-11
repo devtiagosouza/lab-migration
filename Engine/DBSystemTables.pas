@@ -31,6 +31,7 @@ private
 
     procedure LoadTablesAndViews(aWhere : string = '');
     function GetFields(aTableName : string) : TList<TDBField>;
+    function GetFieldList(aViewName : string) : TStringList;
     function GetPrimaryKeys(aTableName: string) : TList<TDBPrimaryKey>;
     function GetForeignKeys(aTableName: string) : TList<TDBForeignKey>;
     function GetCheckConstraints(aTableName: string) : TList<TDBCheck>;
@@ -113,6 +114,39 @@ begin
      FQueryCheck.Next;
   end;
 
+end;
+
+function TDBSystemTables.GetFieldList(aViewName: string): TStringList;
+ const sql = 'SELECT '+sLineBreak+
+'  R.rdb$field_name as field_name '+sLineBreak+
+' FROM RDB$RELATION_FIELDS R  '+sLineBreak+
+'WHERE R.rdb$relation_name = :VIEW_NAME '+sLineBreak+
+'order by r.rdb$field_position';
+VAR
+query : TFDQuery;
+begin
+  try
+    try
+      Result := TStringList.Create;
+      query := TFDQuery.Create(nil);
+      query.Connection := FConnection;
+
+      query.Open(sql,[aViewName]);
+
+      while not query.Eof do
+      begin
+         Result.Add(query.FieldByName('field_name').AsString);
+         query.Next;
+      end;
+
+    except on e: exception do begin
+       raise Exception.Create(e.Message);
+    end;
+    end;
+  finally
+    if Assigned(query) then
+       FreeAndNil(query);
+  end;
 end;
 
 function TDBSystemTables.GetFields(aTableName: string): TList<TDBField>;
@@ -272,7 +306,7 @@ procedure TDBSystemTables.Load;
 begin
    LoadGenerators;
    LoadTriggers;
-   LoadTablesAndViews('trim(t.rdb$relation_name) = '+QuotedStr('ABASTECIMENTO'));
+   LoadTablesAndViews('trim(t.rdb$relation_name) = '+QuotedStr('WABASTECIMENTOS'));
    LoadProcedures;
    LoadFunctions;
 
@@ -326,33 +360,7 @@ begin
   end;
 end;
 
-//procedure TDBSystemTables.LoadIndices;
-//const sql : string = 'select  i.rdb$index_name as name,iif(RDB$INDEX_INACTIVE = 0,''S'',''N'') as ACTIVE, '+sLineBreak+
-//'IIF(I.RDB$UNIQUE_FLAG = 0,''N'',''S'') as IS_UNIQUE, RDB$EXPRESSION_SOURCE AS EXPRESSION,      '+sLineBreak+
-//'I.RDB$RELATION_NAME AS TABLE_NAME, i.RDB$FOREIGN_KEY as FOREIGN_KEY,   '+sLineBreak+
-//'iif(coalesce(i.RDB$INDEX_TYPE,0) = 1,''desc'',''asc'') as SORTING     '+sLineBreak+
-//'from rdb$indices i where i.rdb$system_flag = 0';
-//var
-// vIndex : TDBIndex;
-//begin
-//  Indices := TList<TDBIndex>.create;
-//  FQuery.Open(sql);
-//  while not FQuery.Eof do begin
-//    vIndex := TDBIndex.Create;
-//    vIndex.Name := FQuery.FieldByName('name').AsString;
-//    vIndex.Expression := FQuery.FieldByName('EXPRESSION').AsString;
-//    vIndex.Unique := FQuery.FieldByName('IS_UNIQUE').AsString = 'S';
-//    vIndex.Active :=  FQuery.FieldByName('ACTIVE').AsString = 'S';
-//    vIndex.Sorting := FQuery.FieldByName('SORTING').AsString;
-//
-//
-//
-//    Indices.Add(vIndex);
-//    FQuery.Next;
-//  end;
-//
-//
-//end;
+
 
 procedure TDBSystemTables.LoadProcedures;
 const sql : string = 'select p.rdb$procedure_name as name, p.rdb$procedure_source as source from rdb$procedures p where p.rdb$system_flag = 0';
@@ -419,6 +427,7 @@ begin
      else begin
         vView := TDBView.Create();
         vView.Name := name;
+        vView.FieldList := GetFieldList(name);
         vView.ViewSource :=  FQueryTables.FieldByName('SOURCE').AsString;
 
         Views.Add(vView);

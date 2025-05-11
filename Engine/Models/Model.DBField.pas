@@ -24,23 +24,62 @@ interface
     property Charset : string read FCharset write FCharset;
     property Collate : string read FCollate write FCollate;
 
+    function GetFieldSet : string;
 
-   function CreateCommand: string; override;
+   function DDLCreate: string; override;
+
+   function GetFullFieldSet(spacing : integer = 0) : string;
 
  end;
 
 implementation
 
+  uses Sql.Builder;
+
 { TDBField }
 
 
-function TDBField.CreateCommand: string;
+function TDBField.DDLCreate: string;
 begin
-   result := CommandBuilder(':FIELD_NAME :FIELD_TYPE :FIELD_SET')
-       .AddPar('FIELD_NAME', Name, true)
-       .AddPar('FIELD_TYPE', FieldType)
-       .AddPar('FIELD_SET', FieldSet)
-       .asString;
+   result := TSQLBuilder.Create()
+   .Append('ALTER TABLE :TABLE_NAME ADD :NAME :TYPE')
+     .Append(GetFieldSet)
+    .AsTemplate
+     .SetPar('TABLE_NAME', TableName, True)
+     .SetPar('NAME',Name,true)
+      .SetPar('TYPE',FieldType)
+   .asString(';')
+end;
+
+function TDBField.GetFieldSet: string;
+begin
+  if (string.isnullorempty(DefaultValue) = false) then
+        Result := Result +' '+DefaultValue;
+
+   if (NotNull) then
+        Result := Result +' NOT NULL';
+
+   if (string.isnullorempty(Charset) = FALSE) AND (Charset <> 'NONE') then
+         Result := Result +' '+Charset;
+
+  if (string.isnullorempty(Collate) = FALSE) AND (Collate <> 'NONE') then
+         Result := Result +' '+Collate;
+
+         if (string.isNullOrEmpty(Result.Trim()) = false) then
+             Result := ' '+Result.Trim()
+         else Result := '';
+
+end;
+
+function TDBField.GetFullFieldSet(spacing : integer = 0): string;
+var
+ vName : string;
+begin
+   if (spacing > 0) then
+      vName :=   GetFormatedName.PadRight(spacing,' ')
+   else vName := GetFormatedName;
+
+   Result:= Trim(vName+' '+FieldType+GetFieldSet);
 end;
 
 end.

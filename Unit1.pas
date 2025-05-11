@@ -9,17 +9,16 @@ uses
   FireDAC.Stan.Pool, FireDAC.Stan.Async, FireDAC.Phys, FireDAC.Phys.FB,
    FireDAC.Phys.FBDef, FireDAC.VCLUI.Wait,FireDAC.DApt,
   Data.DB, FireDAC.Comp.Client,MegaMigrator,
-  Vcl.StdCtrls, Sql.Query.Builder, Sql.Query.Builder.CommandTemplate, ClipBrd,Sql.Script.Builder;
+  Vcl.StdCtrls, Sql.Builder, ClipBrd,Sql.Script.Builder, Vcl.ExtCtrls;
 
 type
   TForm1 = class(TForm)
     FDConnection1: TFDConnection;
-    Button1: TButton;
     Memo1: TMemo;
-    Button2: TButton;
+    Panel1: TPanel;
     Button3: TButton;
+    Button1: TButton;
     procedure Button1Click(Sender: TObject);
-    procedure Button2Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
   private
     MegaMigrator : TMegaMigration;
@@ -44,58 +43,6 @@ begin
   ShowMessage('Concluido');
 end;
 
-procedure TForm1.Button2Click(Sender: TObject);
-var
-  builder : TQueryBuilder;
-
-  var
-  Cmd: ICommandTemplate;
-  IsPk : boolean;
-  aCampos : TStringList;
-  cps : string;
-begin
-// IsPk := true;
-//
-//   Cmd := TCommandTemplate.Create('CREATE TABLE :NAME ( '+slineBreak+
-//'    ID      INTEGER NOT NULL {PRIMARY KEY} {BORA BORA BORA},    '+slineBreak+
-//'    NOME    VARCHAR(10),                        '+slineBreak+
-//'    EITA    BLOB SUB_TYPE TEXT SEGMENT SIZE 80,  '+slineBreak+
-//'    NUMERO  NUMERIC(15,2)   '+slineBreak+
-//');')
-//    .AddPar('PRIMARY KEY',IsPk)
-//    .AddPar('BORA BORA BORA',false)
-//   	.AddPar('NAME', 'CADASTROS');
-//
-//    Clipboard.AsText := Cmd.AsString;
-//
-//   Memo1.Lines.Text := Cmd.AsString;
-
- aCampos := TStringList.Create;
- aCampos.Add('CAMPO1 VARCHAR(2)');
- aCampos.Add('CAMPO2 VARCHAR(2)');
- aCampos.Add('CAMPO3 VARCHAR(2)');
-
-// cps := StringReplace(aCampos.Text.Trim, sLineBreak, ',' + sLineBreak, [rfReplaceAll]);
-
- // Memo1.Lines.Text := cps;
-
- // exit;
-
-  builder := TQueryBuilder.Create;
-  Memo1.Lines.Text :=  builder.Start('ini')
-     .Append('CREATE OR ALTER TABLE :NAME')
-     .AppendLine('(')
-       .IncIndent()
-         .AppendLine(aCampos,','+sLineBreak)
-        { .AddLine('CAMPO VARCHAR(2);')
-         .AddLine('CAMPO2 VARCHAR(2);')
-         .AddLine('CAMPO2 VARCHAR(2);')}
-       .DecIndent()
-     .AppendLine(')')
-  .AsString;
-
-end;
-
 procedure TForm1.Button3Click(Sender: TObject);
 var
  script : TScriptBuilder;
@@ -115,7 +62,8 @@ begin
 //                  .IncIndent
 //                  .AppendLine('teste')
 //                  .DecIndent
-//                  .AppendLine(');')
+//                  .AppendLine(');');
+
 
 
 

@@ -17,7 +17,7 @@ interface
       property Increment : Int64 read FIncrement write FIncrement;
       property TriggerName : string read FTriggerName write FTriggerName;
 
-      function CreateCommand: string; override;
+      function DDLCreate: string; override;
 
   end;
 
@@ -26,10 +26,9 @@ implementation
 
 { TDBGenerator }
 
-function TDBGenerator.CreateCommand: string;
+function TDBGenerator.DDLCreate: string;
 begin
-  
-  result := 'CREATE GENERATOR '+Name;
+  result := 'CREATE GENERATOR '+GetFormatedName+';';
 end;
 
 end.

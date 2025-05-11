@@ -2,12 +2,9 @@ unit Model.DBObject;
 
 interface
 
-uses System.SysUtils,FirebirdKeywords, Sql.Query.Builder.CommandTemplate;
+uses System.SysUtils,FirebirdKeywords, Sql.Builder.SqlTemplate;
 
    type TDBObject = class
-
-   published
-       function CommandBuilder(commandTemplate: string) : TCommandTemplate;
 
    private
      FName: string;
@@ -17,7 +14,7 @@ uses System.SysUtils,FirebirdKeywords, Sql.Query.Builder.CommandTemplate;
 
 
        function GetFormatedName: string;
-       function CreateCommand : string; virtual;
+       function DDLCreate : string; virtual;
 
 
    end;
@@ -27,14 +24,9 @@ implementation
 { TDBObject }
 
 
-function TDBObject.CommandBuilder(commandTemplate: string): TCommandTemplate;
-begin
-   result := TCommandTemplate.Create(commandTemplate);
-end;
 
 
-
-function TDBObject.CreateCommand: string;
+function TDBObject.DDLCreate: string;
 begin
   raise Exception.Create('Implemente o método CreateCommand');
 end;

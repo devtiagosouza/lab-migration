@@ -55,7 +55,7 @@ interface
       property IsActive : boolean read FIsActive write FIsActive;
       property Generators : TList<TDBGenerator> read FGenerators write FGenerators;
 
-      function CreateCommand: string; override;
+      function DDLCreate: string; override;
 
       constructor Create();
   end;
@@ -71,7 +71,7 @@ begin
 
 end;
 
-function TDBTrigger.CreateCommand: string;
+function TDBTrigger.DDLCreate: string;
 var
  command : TStringList;
 
