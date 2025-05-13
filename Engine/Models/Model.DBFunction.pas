@@ -2,21 +2,65 @@ unit Model.DBFunction;
 
 interface
 
-  uses Model.DBObject;
+  uses Model.DBObject,DCollections, Model.DBField, Sql.Builder;
 
   type TDBFunction = class(TDBObject)
 
   private
     FFunctionSource: string;
+    FReturnType: string;
 
+    FInputFields: TList<TDBField>;
 
   public
       property FunctionSource : string read FFunctionSource write FFunctionSource;
+      property ReturnType : string read FReturnType write FReturnType;
+      property InputFields : TList<TDBField> read FInputFields write FInputFields;
+
+      function DDLCreate: string; override;
 
   end;
 
 
 implementation
 
-end.
+{ TDBFunction }
+
+function TDBFunction.DDLCreate: string;
+var
+ sql : TSQLBuilder;
+ i : integer;
+ vField : TDBField;
+begin
+   sql := TSQLBuilder.Create;
+  sql.Append('CREATE OR ALTER FUNCTION '+GetFormatedName);
+
+  if (InputFields.Count > 0) then
+  begin
+    sql.Append(' (')
+       .IncIndent;
+
+    for I := 0 to  Pred(InputFields.Count) do
+    begin
+       vField := InputFields[i];
+       sql.AppendLine(vField.GetFullFieldSet);
+
+       if (i < Pred(InputFields.Count)) then
+          Sql.DecIndent.Append(',').IncIndent
+       else  Sql.DecIndent.Append(')')
+    end;
+  end;
+
+   sql.AppendLine('RETURNS '+ReturnType);
+
+
+   sql.AppendLine('AS')
+      .AppendLine(FunctionSource)
+      .Append('^');
+
+
+  result := sql.AsString;
+end;
+
+End.
 

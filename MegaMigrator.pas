@@ -2,7 +2,7 @@ unit MegaMigrator;
 
 interface
 
- uses System.classes,FireDAC.Comp.Client,Model.DBView,  System.SysUtils, DBSystemTables, ClipBrd,
+ uses System.classes,FireDAC.Comp.Client,Model.DBView, Model.DBFunction,  System.SysUtils, DBSystemTables, ClipBrd,
  Model.DBTable,System.IOUtils;
 
  type TMegaMigration = class
@@ -42,7 +42,12 @@ begin
 //     result := TRUE;// table.Name = 'TESTANDO';
 //  end).DDLCreate;
 
-  str :=  SystemTables.Views.First(function(table : TDBView) : boolean
+//  str :=  SystemTables.Views.First(function(table : TDBView) : boolean
+//  begin
+//     result := TRUE;// table.Name = 'TESTANDO';
+//  end).DDLCreate;
+
+  str :=  SystemTables.Functions.First(function(table : TDBFunction) : boolean
   begin
      result := TRUE;// table.Name = 'TESTANDO';
   end).DDLCreate;

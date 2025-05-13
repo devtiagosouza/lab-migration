@@ -19,6 +19,7 @@ private
     FQueryTrigger : TFDQuery;
     FQueryGenerator : TFDQuery;
     FQueryFunctions : TFDQuery;
+    FQueryFields : TFDQuery;
 
     FTables: TList<TDBTable>;
     FDBView: TList<TDBView>;
@@ -31,6 +32,9 @@ private
 
     procedure LoadTablesAndViews(aWhere : string = '');
     function GetFields(aTableName : string) : TList<TDBField>;
+    procedure GetProcedureFields(aProcedureName : string; var aInputFields : TList<TDBField>; var aOutputFields :  TList<TDBField>);
+    procedure GetFunctionFields(aFunctionName : string; var aInputFields : TList<TDBField>; var aOutputFieldType :  string);
+
     function GetFieldList(aViewName : string) : TStringList;
     function GetPrimaryKeys(aTableName: string) : TList<TDBPrimaryKey>;
     function GetForeignKeys(aTableName: string) : TList<TDBForeignKey>;
@@ -82,6 +86,7 @@ begin
    FQueryTrigger := TFDQuery.Create(nil);
    FQueryGenerator := TFDQuery.Create(nil);
    FQueryFunctions := TFDQuery.Create(nil);
+   FQueryFields := TFDQuery.Create(nil);
 
    FQueryTables.Connection := AConnection;
    FQueryPK.Connection := AConnection;
@@ -92,6 +97,7 @@ begin
    FQueryTrigger.Connection := AConnection;
    FQueryGenerator.Connection := AConnection;
    FQueryFunctions.Connection := AConnection;
+   FQueryFields.Connection := AConnection;
 end;
 
 function TDBSystemTables.GetCheckConstraints(
@@ -149,6 +155,9 @@ begin
   end;
 end;
 
+
+
+
 function TDBSystemTables.GetFields(aTableName: string): TList<TDBField>;
 var
  query : TFDQuery;
@@ -169,6 +178,7 @@ begin
 
         vField := TDBField.Create;
         with vField do begin
+           TableName    :=  aTableName.ToUpper;
            Name         := query.FieldByName('FIELD_NAME').AsString;
            FieldType    := query.FieldByName('FIELD_TYPE').AsString;
            FieldSet     := query.FieldByName('FIELD_SET').AsString;
@@ -220,6 +230,8 @@ begin
  end;
 
 end;
+
+
 
 function TDBSystemTables.GetIndices(aTableName: string): TList<TDBIndex>;
 var
@@ -275,6 +287,96 @@ begin
 
 end;
 
+
+procedure TDBSystemTables.GetFunctionFields(aFunctionName: string;
+  var aInputFields: TList<TDBField>; var aOutputFieldType: string);
+var
+  sql : string;
+  vField : TDBField;
+begin
+   try
+      aInputFields := TList<TDBField>.Create;
+      aOutputFieldType := '';
+      sql := TSqlResources.Read('QUERY_FUNCTION_FIELDS_SQL');
+
+      FQueryFields.Open(sql,[afunctionName]);
+
+
+      while not FQueryFields.Eof do
+      begin
+
+         if (FQueryFields.FieldByName('FIELD_NAME').AsString <> '') then
+         begin
+
+            vField := TDBField.Create;
+            with vField do begin
+               Name         := FQueryFields.FieldByName('FIELD_NAME').AsString;
+               FieldType    := FQueryFields.FieldByName('FIELD_TYPE').AsString;
+               FieldSet     := FQueryFields.FieldByName('FIELD_SET').AsString;
+               NotNull      :=  FQueryFields.FieldByName('FIELD_NULL').AsString = 'NOT NULL';
+               Charset      := FQueryFields.FieldByName('FIELD_CHARSET').AsString;
+               Collate      :=  FQueryFields.FieldByName('FIELD_COLLATION').AsString;
+               DefaultValue := FQueryFields.FieldByName('FIELD_DEFAULT').AsString;
+            end;
+
+            if (FQueryFields.FieldByName('PARAMETER_DIRECTION').AsString = 'INPUT') then
+                aInputFields.Add(vField);
+         end
+         else aOutputFieldType :=  FQueryFields.FieldByName('FIELD_TYPE').AsString;
+
+        FQueryFields.Next;
+      end;
+
+    except on e: exception do begin
+       raise Exception.Create(e.Message);
+    end;
+    end;
+end;
+
+
+procedure TDBSystemTables.GetProcedureFields(aProcedureName: string;
+  var aInputFields, aOutputFields: TList<TDBField>);
+  var
+  sql : string;
+  vField : TDBField;
+begin
+    try
+      aInputFields := TList<TDBField>.Create;
+      aOutputFields := TList<TDBField>.Create;
+      sql := TSqlResources.Read('QUERY_PROCEDURE_FIELDS_SQL');
+
+      FQueryFields.Open(sql,[aProcedureName]);
+
+
+      while not FQueryFields.Eof do
+      begin
+
+        vField := TDBField.Create;
+        with vField do begin
+           TableName    := aProcedureName.ToUpper;
+           Name         := FQueryFields.FieldByName('FIELD_NAME').AsString;
+           FieldType    := FQueryFields.FieldByName('FIELD_TYPE').AsString;
+           FieldSet     := FQueryFields.FieldByName('FIELD_SET').AsString;
+           NotNull      :=  FQueryFields.FieldByName('FIELD_NULL').AsString = 'NOT NULL';
+           Charset      := FQueryFields.FieldByName('FIELD_CHARSET').AsString;
+           Collate      :=  FQueryFields.FieldByName('FIELD_COLLATION').AsString;
+           DefaultValue := FQueryFields.FieldByName('FIELD_DEFAULT').AsString;
+        end;
+
+        if (FQueryFields.FieldByName('PARAMETER_DIRECTION').AsString = 'INPUT') then
+            aInputFields.Add(vField)
+        ELSE aOutputFields.Add(vField);
+
+
+        FQueryFields.Next;
+      end;
+
+    except on e: exception do begin
+       raise Exception.Create(e.Message);
+    end;
+    end;
+end;
+
 function TDBSystemTables.GetUniqueConstraints(
   aTableName: string): TList<TDBUnique>;
   var
@@ -304,10 +406,10 @@ end;
 
 procedure TDBSystemTables.Load;
 begin
-   LoadGenerators;
-   LoadTriggers;
-   LoadTablesAndViews('trim(t.rdb$relation_name) = '+QuotedStr('WABASTECIMENTOS'));
-   LoadProcedures;
+  // LoadGenerators;
+   //LoadTriggers;
+  // LoadTablesAndViews('trim(t.rdb$relation_name) = '+QuotedStr('WABASTECIMENTOS'));
+//   LoadProcedures;
    LoadFunctions;
 
 
@@ -315,29 +417,7 @@ begin
 
 end;
 
-procedure TDBSystemTables.LoadFunctions;
-const sql : string = 'select p.rdb$function_name as name, p.rdb$function_source as source from rdb$functions p where p.rdb$system_flag = 0';
-var
- vFunction : TDBFunction;
-begin
-  Functions := TList<TDBFunction>.create;
-  FQueryFunctions.Open(sql);
-  while not FQueryFunctions.Eof do
-  begin
-    vFunction := TDBFunction.Create;
-    vFunction.Name := FQueryFunctions.FieldByName('name').AsString;
-    vFunction.FunctionSource := FQueryFunctions.FieldByName('source').AsString;
 
-    Functions.Add(vFunction);
-
-    FQueryFunctions.Next;
-  end;
-
-
-
-
-
-end;
 
 procedure TDBSystemTables.LoadGenerators;
 var
@@ -360,12 +440,42 @@ begin
   end;
 end;
 
+procedure TDBSystemTables.LoadFunctions;
+const sql : string = 'select trim(p.rdb$function_name) as name, p.rdb$function_source as source from rdb$functions p where p.rdb$system_flag = 0'
+ +' and TRIM(p.rdb$function_name) = ''FUNC_TESTE'' ';
+var
+ vFunction : TDBFunction;
+  InputFields : TList<TDBField>;
+  vReturnType : string;
+begin
+  Functions := TList<TDBFunction>.create;
+  FQueryFunctions.Open(sql);
+  while not FQueryFunctions.Eof do
+  begin
+    vFunction := TDBFunction.Create;
+    vFunction.Name := FQueryFunctions.FieldByName('name').AsString;
+    vFunction.FunctionSource := FQueryFunctions.FieldByName('source').AsString;
+    GetFunctionFields(vFunction.Name, InputFields, vReturnType );
+    vFunction.InputFields := InputFields;
+    vFunction.ReturnType := vReturnType;
+
+    Functions.Add(vFunction);
+
+    FQueryFunctions.Next;
+  end;
+
+
+end;
+
 
 
 procedure TDBSystemTables.LoadProcedures;
-const sql : string = 'select p.rdb$procedure_name as name, p.rdb$procedure_source as source from rdb$procedures p where p.rdb$system_flag = 0';
+const sql : string = 'select p.rdb$procedure_name as name, p.rdb$procedure_source as source from rdb$procedures p where p.rdb$system_flag = 0'
+ +' and TRIM(p.rdb$procedure_name) = ''SP_LMC''';
 var
  vProcedure : TDBProcedure;
+ InputFields : TList<TDBField>;
+ outputFields : TList<TDBField>;
 begin
   Procedures := TList<TDBProcedure>.create;
   FQueryFunctions.Open(sql);
@@ -374,6 +484,10 @@ begin
     vProcedure := TDBProcedure.Create;
     vProcedure.Name := FQueryFunctions.FieldByName('name').AsString;
     vProcedure.ProcedureSource := FQueryFunctions.FieldByName('source').AsString;
+    GetProcedureFields(vProcedure.Name, InputFields,outputFields);
+
+    vProcedure.InputFields := InputFields;
+    vProcedure.OutputFields := outputFields;
 
     Procedures.Add(vProcedure);
 
