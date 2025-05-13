@@ -21,7 +21,10 @@ uses
   FirebirdKeywords in 'Engine\FirebirdKeywords.pas',
   Sql.Builder in 'Engine\SQLBuilders\Sql.Builder.pas',
   Sql.Builder.SqlTemplate in 'Engine\SQLBuilders\Sql.Builder.SqlTemplate.pas',
-  Sql.Script.Builder in 'Engine\SQLBuilders\Sql.Script.Builder.pas';
+  Sql.Script.Builder in 'Engine\SQLBuilders\Sql.Script.Builder.pas',
+  Migration in 'Engine\Migration.pas',
+  Parser.Interfaces in 'Engine\Parsers\Parser.Interfaces.pas',
+  Parser.Procedures in 'Engine\Parsers\Parser.Procedures.pas';
 
 {$R *.res}
 

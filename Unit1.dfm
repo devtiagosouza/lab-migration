@@ -31,10 +31,6 @@ object Form1: TForm1
     ParentFont = False
     ScrollBars = ssBoth
     TabOrder = 0
-    ExplicitLeft = 40
-    ExplicitTop = 72
-    ExplicitWidth = 705
-    ExplicitHeight = 425
   end
   object Panel1: TPanel
     Left = 0
@@ -44,9 +40,6 @@ object Form1: TForm1
     Align = alTop
     Caption = 'Panel1'
     TabOrder = 1
-    ExplicitLeft = 32
-    ExplicitTop = 8
-    ExplicitWidth = 371
     object Button3: TButton
       Left = 360
       Top = 8

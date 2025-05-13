@@ -66,10 +66,6 @@ begin
 
 
 
-
-
-
-
   script.AppendLine('--End Script');
 
   Memo1.Lines.Text := script.AsString;
