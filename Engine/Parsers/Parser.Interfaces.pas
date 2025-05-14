@@ -3,7 +3,7 @@ unit Parser.Interfaces;
 interface
  uses Model.DBObject, Model.DBTable, Model.DBProcedure;
 
-type IFBDDLParser = interface
+  type IFBDDLParser = interface
     ['{549012C1-2C32-4C67-A97C-6BEC5240CC70}']
     function Parse(const ASQL: string): TDBObject;
   end;
@@ -17,6 +17,8 @@ type IFBDDLParser = interface
   ['{142E3EFD-DE1B-4FC6-9973-47FFA0D62A99}']
     function ParseProcedure(const ASQL: string): TDBProcedure;
   end;
+
+
 
 
 

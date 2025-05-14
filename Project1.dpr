@@ -24,7 +24,8 @@ uses
   Sql.Script.Builder in 'Engine\SQLBuilders\Sql.Script.Builder.pas',
   Migration in 'Engine\Migration.pas',
   Parser.Interfaces in 'Engine\Parsers\Parser.Interfaces.pas',
-  Parser.Procedures in 'Engine\Parsers\Parser.Procedures.pas';
+  Parser.Procedures in 'Engine\Parsers\Parser.Procedures.pas',
+  Parser in 'Engine\Parsers\Parser.pas';
 
 {$R *.res}
 
