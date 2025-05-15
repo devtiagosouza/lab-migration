@@ -42,7 +42,7 @@ object Form1: TForm1
     TabOrder = 1
     object Button3: TButton
       Left = 360
-      Top = 8
+      Top = 10
       Width = 75
       Height = 25
       Caption = 'Button3'

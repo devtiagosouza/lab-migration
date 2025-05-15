@@ -3,7 +3,7 @@ unit Parser;
 interface
 
 uses
-  System.SysUtils, System.Classes, DCollections, System.RegularExpressions, System.StrUtils;
+  System.SysUtils, System.Classes, DCollections,  System.RegularExpressions, System.StrUtils, ClipBrd;
 
 type
   TDDLCommandType = (ddlUnknown, ddlCreate, ddlAlter, ddlDrop);
@@ -17,6 +17,11 @@ type
     ObjectName: string;
   end;
 
+  TDelimitersParts = record
+     SqlPart : string;
+     Delimiter : char;
+  end;
+
   TParser = class
   private
     function DetectCommandType(const SQL: string): TDDLCommandType;
@@ -25,9 +30,12 @@ type
     function RemoveComments(const SQL: string): string;
     function RemoveSetTerm(const SQL: string): string;
     function SplitSQL(const DDLText: string): TArray<string>;
+    function SplitDelimitersParts(const DDLText: string) : TArray<TDelimitersParts>;
+
   public
     constructor Create();
     function Parse(const DDLText: string): TList<TDDLCommand>;
+
   end;
 
 implementation
@@ -71,6 +79,8 @@ begin
   // Para TABLE, INDEX, GEN, etc., somente CREATE é permitido
   else if TRegEx.IsMatch(SQL, '^\s*CREATE\s+TABLE', [roIgnoreCase]) then
     Result := objTable
+   else if TRegEx.IsMatch(SQL, '^\s*ALTER\s+TABLE', [roIgnoreCase]) then
+    Result := objTable
   else if TRegEx.IsMatch(SQL, '^\s*CREATE\s+INDEX', [roIgnoreCase]) then
     Result := objIndex
   else if TRegEx.IsMatch(SQL, '^\s*CREATE\s+GENERATOR', [roIgnoreCase]) then
@@ -84,6 +94,38 @@ end;
 
 
 
+function TParser.SplitDelimitersParts(const DDLText: string): TArray<TDelimitersParts>;
+var
+  DelimiterPart : TDelimitersParts;
+  Commands: TArray<string>;
+  part : string;
+  list : TList<TDelimitersParts>;
+begin
+
+   list := TList<TDelimitersParts>.Create;
+
+   Commands := DDLText.Split(['SET TERM'], TStringSplitOptions.ExcludeEmpty);
+   for part in Commands do begin
+      if (part.Trim.Replace('^ ;','').Replace('; ^','') <> '') then begin
+         if TRegEx.IsMatch(part, '^\s*\^\s;', [roIgnoreCase]) then
+         begin
+             DelimiterPart.SqlPart := part.TrimLeft.Replace('^ ;','');
+             DelimiterPart.Delimiter := '^';
+             list.Add(DelimiterPart);
+         end
+         else begin
+             DelimiterPart.SqlPart := part.TrimLeft.Replace('; ^','');
+             DelimiterPart.Delimiter := ';';
+             list.Add(DelimiterPart);
+         end;
+      end;
+
+   end;
+
+   Result := list.ToArray;
+
+end;
+
 function TParser.ExtractObjectName(const SQL: string): string;
 var
   Regex: TRegEx;
@@ -96,6 +138,8 @@ begin
   else
     Result := '';  // Retorna vazio se não encontrar o nome
 end;
+
+
 
 function TParser.RemoveComments(const SQL: string): string;
 var
@@ -130,48 +174,72 @@ end;
 function TParser.SplitSQL(const DDLText: string): TArray<string>;
 var
   Statements: TList<string>;
-  CleanSQL, Part: string;
-  StartPos, EndPos, EndProcPos: Integer;
-begin
-  Statements := TList<string>.Create;
-  CleanSQL := DDLText;
+  CleanDDL: string;
+  PosStartTerm, PosEndTerm: Integer;
+  PartBefore, PartBetween, PartAfter: string;
+  SplitPart: TArray<string>;
+  Cmd: string;
+  Part : TDelimitersParts;
 
-  // Primeiro, remove comentários e o SET TERM
-  CleanSQL := RemoveComments(CleanSQL);
-  CleanSQL := RemoveSetTerm(CleanSQL);
-
-  // Processa o texto inteiro, procurando por delimitadores "^" ou ";" para dividir
-  StartPos := 1;
-
-  while StartPos <= Length(CleanSQL) do
+  procedure AddCommandsFrom(const Text: string; Delimiter: Char);
+  var
+    Commands: TArray<string>;
+    C, TrimmedCmd: string;
   begin
-    // Para TRIGGER, PROCEDURE, FUNCTION, VIEW, com "END" seguido de "^"
-    EndProcPos := TRegEx.Match(CleanSQL.Substring(StartPos - 1), 'END\s*\^', [roIgnoreCase, roMultiline]).Index;
-
-    if EndProcPos > 0 then
+    Commands := Text.Split([Delimiter], TStringSplitOptions.ExcludeEmpty);
+    for C in Commands do
     begin
-      // Encontra o "END^", captura o comando completo e adiciona à lista
-      EndPos := StartPos + EndProcPos + 4;  // Pula o "END^"
-      Part := CleanSQL.Substring(StartPos - 1, EndPos - StartPos);
-      Statements.Add(Part.Trim);  // Adiciona a parte do comando SQL
-      StartPos := EndPos + 1;     // Move para o próximo comando após o "END^"
-    end
-    else
-    begin
-      // Para comandos gerais, divide com ";"
-      EndPos := PosEx(';', CleanSQL, StartPos);
-      if EndPos = 0 then
-        Break;  // Caso não haja mais delimitadores, saímos do loop
-
-      Part := CleanSQL.Substring(StartPos - 1, EndPos - StartPos);
-      Statements.Add(Part.Trim);  // Adiciona a parte do comando SQL
-      StartPos := EndPos + 1;     // Move para o próximo comando após o ";"
+      TrimmedCmd := C.Trim;
+      if TrimmedCmd <> '' then
+        Statements.Add(TrimmedCmd);
     end;
   end;
+
+begin
+    Statements := TList<string>.Create;
+    CleanDDL := RemoveComments(DDLText)
+                .Replace('SET SQL DIALECT 3;','',[rfReplaceAll, rfIgnoreCase]);
+
+  //CleanDDL := RemoveSetTerm(CleanDDL);
+
+  // Busca posições dos delimitadores SET TERM
+
+
+  for Part in SplitDelimitersParts(CleanDDL) do begin
+      AddCommandsFrom(Part.SqlPart,Part.Delimiter);
+  end;
+
+
+
+
+
+//  PosStartTerm := Pos('SET TERM ^ ;', UpperCase(DDLText));
+//  PosEndTerm := Pos('SET TERM ; ^', UpperCase(DDLText));
+//
+//  if (PosStartTerm > 0) and (PosEndTerm > PosStartTerm) then
+//  begin
+//    // Extrai texto antes do SET TERM ^ ;
+//    PartBefore := Copy(DDLText, 1, PosStartTerm - 1);
+//    // Extrai texto entre SET TERM ^ ; e SET TERM ; ^
+//    PartBetween := Copy(DDLText, PosStartTerm + Length('SET TERM ^ ;'), PosEndTerm - (PosStartTerm + Length('SET TERM ^ ;')));
+//    // Extrai texto depois do SET TERM ; ^
+//    PartAfter := Copy(DDLText, PosEndTerm + Length('SET TERM ; ^'), Length(DDLText));
+//
+//    // Divide o texto antes e depois por ';'
+//    AddCommandsFrom(PartBefore, ';');
+//    AddCommandsFrom(PartBetween, '^');  // Delimitador para bloco entre SET TERM
+//    AddCommandsFrom(PartAfter, ';');
+//  end
+//  else
+//  begin
+//    // Se não encontrar delimitadores SET TERM, divide tudo por ';'
+//    AddCommandsFrom(DDLText, ';');
+//  end;
 
   Result := Statements.ToArray;
   Statements.Free;
 end;
+
 
 
 function TParser.Parse(const DDLText: string): TList<TDDLCommand>;

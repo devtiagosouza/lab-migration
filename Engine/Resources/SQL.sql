@@ -125,7 +125,12 @@ CREATE OR ALTER TRIGGER TRG_MOVIMENTACAO_CAIXA FOR CAIXA
 ACTIVE AFTER INSERT OR UPDATE OR DELETE POSITION 0
 AS  begin   if (deleting) then      EXECUTE PROCEDURE SP_MPA_MOVIMENTACAO_CAIXA(old.data,old.data);   else if (updating) then begin         if ((new.data <> old.data) or (new.id_conta <> old.id_conta) or (new.id_turno <> old.id_turno) or (new.valor <> old.valor))    then           EXECUTE PROCEDURE SP_MPA_MOVIMENTACAO_CAIXA(new.data,new.data);         if (new.data <> old.data) then              EXECUTE PROCEDURE SP_MPA_MOVIMENTACAO_CAIXA(old.data,old.data);   end   else EXECUTE PROCEDURE SP_MPA_MOVIMENTACAO_CAIXA(new.data,new.data);  end
 ^
+
 SET TERM ; ^
+
+CREATE INDEX CAIXA_CX_ID_CONTA_BANCO ON CAIXA (ID_CONTA_BANCO);
+
+SET TERM ^ ;
 
 
 

@@ -8,8 +8,8 @@ uses
   FireDAC.Stan.Error, FireDAC.UI.Intf, FireDAC.Phys.Intf, FireDAC.Stan.Def,
   FireDAC.Stan.Pool, FireDAC.Stan.Async, FireDAC.Phys, FireDAC.Phys.FB,
    FireDAC.Phys.FBDef, FireDAC.VCLUI.Wait,FireDAC.DApt,
-  Data.DB, FireDAC.Comp.Client,MegaMigrator,
-  Vcl.StdCtrls, Sql.Builder, ClipBrd,Sql.Script.Builder,DCollections,TypInfo, Vcl.ExtCtrls,Parser;
+  Data.DB, FireDAC.Comp.Client,MegaMigrator, ClipBrd,
+  Vcl.StdCtrls, Sql.Builder,Sql.Script.Builder,DCollections,TypInfo, Vcl.ExtCtrls,Parser;
 
 type
   TForm1 = class(TForm)
@@ -57,6 +57,8 @@ begin
   parser := TParser.Create;
   sql := SqlResources.TSqlResources.Read('SQL_sql');
   comandos :=  parser.Parse(sql);
+
+
 
   Memo1.Clear;
 
