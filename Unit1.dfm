@@ -2,7 +2,7 @@ object Form1: TForm1
   Left = 0
   Top = 0
   Caption = 'Form1'
-  ClientHeight = 532
+  ClientHeight = 540
   ClientWidth = 789
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -19,8 +19,8 @@ object Form1: TForm1
     Left = 0
     Top = 41
     Width = 789
-    Height = 491
-    Align = alClient
+    Height = 264
+    Align = alTop
     Font.Charset = ANSI_CHARSET
     Font.Color = clWindowText
     Font.Height = -12
@@ -58,6 +58,25 @@ object Form1: TForm1
       TabOrder = 1
       OnClick = Button1Click
     end
+  end
+  object Memo2: TMemo
+    Left = 0
+    Top = 305
+    Width = 789
+    Height = 235
+    Align = alClient
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -12
+    Font.Name = 'Courier New'
+    Font.Style = []
+    Lines.Strings = (
+      'Memo1')
+    ParentFont = False
+    ScrollBars = ssBoth
+    TabOrder = 2
+    ExplicitTop = 320
+    ExplicitHeight = 212
   end
   object FDConnection1: TFDConnection
     Params.Strings = (

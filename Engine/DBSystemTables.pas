@@ -181,7 +181,6 @@ begin
            TableName    :=  aTableName.ToUpper;
            Name         := query.FieldByName('FIELD_NAME').AsString;
            FieldType    := query.FieldByName('FIELD_TYPE').AsString;
-           FieldSet     := query.FieldByName('FIELD_SET').AsString;
            NotNull      :=  query.FieldByName('FIELD_NULL').AsString = 'NOT NULL';
            Charset      := query.FieldByName('FIELD_CHARSET').AsString;
            Collate      :=  query.FieldByName('FIELD_COLLATION').AsString;
@@ -312,7 +311,6 @@ begin
             with vField do begin
                Name         := FQueryFields.FieldByName('FIELD_NAME').AsString;
                FieldType    := FQueryFields.FieldByName('FIELD_TYPE').AsString;
-               FieldSet     := FQueryFields.FieldByName('FIELD_SET').AsString;
                NotNull      :=  FQueryFields.FieldByName('FIELD_NULL').AsString = 'NOT NULL';
                Charset      := FQueryFields.FieldByName('FIELD_CHARSET').AsString;
                Collate      :=  FQueryFields.FieldByName('FIELD_COLLATION').AsString;
@@ -356,7 +354,6 @@ begin
            TableName    := aProcedureName.ToUpper;
            Name         := FQueryFields.FieldByName('FIELD_NAME').AsString;
            FieldType    := FQueryFields.FieldByName('FIELD_TYPE').AsString;
-           FieldSet     := FQueryFields.FieldByName('FIELD_SET').AsString;
            NotNull      :=  FQueryFields.FieldByName('FIELD_NULL').AsString = 'NOT NULL';
            Charset      := FQueryFields.FieldByName('FIELD_CHARSET').AsString;
            Collate      :=  FQueryFields.FieldByName('FIELD_COLLATION').AsString;

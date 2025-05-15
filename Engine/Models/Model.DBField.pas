@@ -12,13 +12,11 @@ interface
     FCharset: string;
     FCollate: string;
     FTableName: string;
-    FFieldSet: string;
 
  public
 
     property TableName : string read FTableName write FTableName;
     property FieldType : string read FFieldType write FFieldType;
-    property FieldSet : string read FFieldSet write FFieldSet;
     property NotNull : boolean read FNotNull write FNotNull;
     property DefaultValue : string read FDefaultValue write FDefaultValue;
     property Charset : string read FCharset write FCharset;

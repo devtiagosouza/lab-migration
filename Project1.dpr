@@ -25,7 +25,10 @@ uses
   Migration in 'Engine\Migration.pas',
   Parser.Interfaces in 'Engine\Parsers\Parser.Interfaces.pas',
   Parser.Procedures in 'Engine\Parsers\Parser.Procedures.pas',
-  Parser in 'Engine\Parsers\Parser.pas';
+  Splitters in 'Engine\Parsers\Splitters.pas',
+  Parser.Tables in 'Engine\Parsers\Parser.Tables.pas',
+  Firebird.Types in 'Engine\Firebird.Types.pas',
+  Parser.Fields in 'Engine\Parsers\Parser.Fields.pas';
 
 {$R *.res}
 

@@ -7,7 +7,8 @@ uses
 
 type
   TDDLCommandType = (ddlUnknown, ddlCreate, ddlAlter, ddlDrop);
-  TDBObjectType = (objUnknown, objTable, objView, objProcedure, objFunction, objTrigger, objIndex, objGenerator);
+  TDBObjectType = (objUnknown, objTable, objView, objProcedure, objFunction, objTrigger,
+                   objIndex, objGenerator);
 
   TDDLCommand = class
   public
@@ -33,13 +34,13 @@ type
 
   public
     constructor Create();
-    function Parse(const DDLText: string): TList<TDDLCommand>;
+    function Split(const DDLText: string): TList<TDDLCommand>;
 
   end;
 
 implementation
 
-{ TParser }
+{ TCommandSplitter }
 
 constructor TCommandSplitter.Create;
 begin
@@ -103,10 +104,10 @@ begin
 
    Commands := DDLText.Split(['SET TERM'], TStringSplitOptions.ExcludeEmpty);
    for part in Commands do begin
-      if (part.Trim.Replace('^ ;','').Replace('; ^','') <> '') then begin
+      if (part.Trim.Replace('^ ;','').Replace('; ^','').Trim <> '') then begin
          if TRegEx.IsMatch(part, '^\s*\^\s;', [roIgnoreCase]) then
          begin
-             DelimiterPart.SqlPart := part.TrimLeft.Replace('^ ;','');
+             DelimiterPart.SqlPart := part.TrimLeft.Replace('^ ;', '').Replace('; ^', '').Trim;
              DelimiterPart.Delimiter := '^';
              list.Add(DelimiterPart);
          end
@@ -141,15 +142,17 @@ function TCommandSplitter.RemoveComments(const SQL: string): string;
 var
   Regex: TRegEx;
 begin
-  Regex := TRegEx.Create('/\*.*?\*/', [roIgnoreCase, roSingleLine]);
+  // Remove comentários de bloco (/* ... */) incluindo multilinhas
+  Regex := TRegEx.Create('/\*[\s\S]*?\*/', [roIgnoreCase]);
   Result := Regex.Replace(SQL, '');
 
-  Regex := TRegEx.Create('--.*$', [roIgnoreCase, roMultiline]);
-  Result := Regex.Replace(Result, '');
+  // Remove comentários de linha (-- ...), preservando as quebras de linha
+ // Regex := TRegEx.Create('--.*$', [roIgnoreCase, roMultiline]);
+ // Result := Regex.Replace(Result, '');
 
-  Result := Result.Replace(#13#10, ' ').Replace(#10, ' ').Trim;
+  // Não substitua quebras de linha por espaços, preserve o texto original
+  Result := Result.Trim;
 end;
-
 
 function TCommandSplitter.SplitSQL(const DDLText: string): TArray<string>;
 var
@@ -191,7 +194,7 @@ end;
 
 
 
-function TCommandSplitter.Parse(const DDLText: string): TList<TDDLCommand>;
+function TCommandSplitter.Split(const DDLText: string): TList<TDDLCommand>;
 var
   ResultList: TList<TDDLCommand>;
   Statements: TArray<string>;
@@ -206,6 +209,9 @@ begin
   begin
     CleanSQL := SQL.Trim;
     if CleanSQL = '' then
+      Continue;
+
+    if TRegEx.IsMatch(CleanSQL, '^\s*GRANT\b', [roIgnoreCase]) then
       Continue;
 
     Command := TDDLCommand.Create;
