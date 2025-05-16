@@ -13,15 +13,44 @@ uses
 
   uses  System.SysUtils;
 
+  type TDDLType = (comUnknown, comCreateIndexOnFields, comCreateIndexComputed,
+                   comCreateConstraintPK, comCreateConstraintUnique, comCreateConstraintCheck, comCreateConstraintFK, comCreateTable,
+                   comCreateField, comCreateOrAlterView, comCreateGenerator,comCreateOrAlterTrigger, comCreateOrAlterProcedure,
+                   comCreateOrAlterFuncion);
+
 type
   TFirebirdTypePattern = record
     TypeName: string;
     RegexPattern: string;
   end;
 
+  type TDDLMatch = record
+     DDLType: TDDLType;
+     Regex : string;
+     Match : TMatch;
+  end;
+
 var
   FirebirdTypes: TDictionary<string, string>;
+  DDLPatterns : TDictionary<TDDLType, string>;
 
+
+procedure InitializeDDLPatterns;
+begin
+   DDLPatterns := TDictionary<TDDLType, string>.Create;
+
+
+   DDLPatterns.Add(comCreateTable,'^\s*CREATE|RECREATE\s+TABLE\s+(\w+)');
+
+   DDLPatterns.Add(comCreateConstraintPK,'^\s*ALTER\s+TABLE\s+(\w+)\s+ADD\s+CONSTRAINT\s+(\w+)\s+PRIMARY\s+KEY\s*\(\s*([^)]+?)\s*\)(?:\s+USING\s+INDEX\s+(\w+))?\s*;?\s*$');
+   DDLPatterns.Add(comCreateConstraintUnique,'^\s*ALTER\s+TABLE\s+(\w+)\s+ADD\s+CONSTRAINT\s+(\w+)\s+UNIQUE\s*\(\s*("?[\w\s]+"?(?:\s*,\s*"?[\w\s]+"?)*)\s*\)(?:\s+USING\s+DESCENDING\s+INDEX\s+(\w+))?\s*;?\s*$');
+   DDLPatterns.Add(comCreateConstraintCheck,'^\s*ALTER\s+TABLE\s+(\w+)\s+ADD\s+CONSTRAINT\s+(\w+)\s+CHECK\s*\((.*)\)\s*;?\s*$');
+   DDLPatterns.Add(comCreateConstraintFK,('(?im)^\s*ALTER\s+TABLE\s+(\w+)\s+ADD\s+CONSTRAINT\s+(\w+)\s+FOREIGN\s+KEY\s*\(\s*([^)]+?)\s*\)\s+REFERENCES\s+(\w+)\s*\(\s*([^)]+?)\s*\)\s*(ON\s+DELETE\s+\w+(?:\s+ON\s+UPDATE\s+\w+)?)?\s*(USING\s+DESCENDING\s+INDEX\s+\w+)?\s*;?\s*$');
+   //DDLPatterns.Add(comCreateConstraintFK,'^\s*ALTER\s+TABLE\s+(\w+)\s+ADD\s+CONSTRAINT\s+(\w+)\s+FOREIGN\s+KEY\s*\(\s*([^)]+?)\s*\)\s+REFERENCES\s+(\w+)\s*\(\s*([^)]+?)\s*\)(?:\s+ON\s+DELETE\s+(\w+))?(?:\s+ON\s+UPDATE\s+(\w+))?(?:\s+USING\s+DESCENDING\s+INDEX\s+(\w+))?\s*;?\s*$');
+
+   DDLPatterns.Add(comCreateIndexOnFields,'^\s*CREATE\s+(UNIQUE DESCENDING|UNIQUE|DESCENDING)?\s*INDEX\s+(\w+)\s+ON\s+(\w+)\s*\(\s*([^)]+?)\s*\)');
+   DDLPatterns.Add(comCreateIndexComputed,'^\s*CREATE\s+(UNIQUE DESCENDING|UNIQUE|DESCENDING)?\s*INDEX\s+(\w+)\s+ON\s+(\w+)\s+COMPUTED\s+BY\s*\((.*)\)\s*$');
+end;
 
 procedure InitializeFirebirdTypes;
 begin
@@ -46,6 +75,30 @@ begin
   FirebirdTypes.Add('VARCHAR', '\bVARCHAR\(\d+\)');
 end;
 
+function MatchDDL(const AText: string) : TDDLMatch;
+var
+  Pair: TPair<TDDLType, string>;
+  Regex: TRegEx;
+  M: TMatch;
+begin
+  Result.DDLType := comUnknown;
+  Result.Regex := '';
+  Result.Match := Default(TMatch);
+
+  for Pair in DDLPatterns do
+  begin
+    Regex := TRegEx.Create(Pair.Value, [roIgnoreCase]);
+    M := Regex.Match(AText);
+    if M.Success then
+    begin
+      Result.DDLType := Pair.Key;
+      Result.Regex := Pair.Value;
+      Result.Match := M;
+      Exit;
+    end;
+  end;
+end;
+
 { Retorna o primeiro match válido da lista de regex do dicionário Firebird }
 function MatchFirebirdType(const Text: string): TMatch;
 var
@@ -65,6 +118,8 @@ begin
     end;
   end;
 end;
+
+
 
 function IsValidFirebirdType(const FieldType: string): Boolean;
 var
@@ -86,9 +141,11 @@ end;
 
 initialization
   InitializeFirebirdTypes;
+  InitializeDDLPatterns;
 
 finalization
   FirebirdTypes.Free;
+  DDLPatterns.Free;
 
 End.
 

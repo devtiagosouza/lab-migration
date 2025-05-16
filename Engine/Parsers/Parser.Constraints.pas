@@ -16,7 +16,7 @@ implementation
 
 class function TConstraintParser.Parse(const ConstraintSQL: string): TDBObject;
 var
-  Constraint: TDBPrimaryKey; // pode mudar depois para base TDBObject se quiser
+  Constraint: TDBPrimaryKey;
   Match: TMatch;
   ColumnsStr, RefColsStr: string;
   Columns, RefColumns: TArray<string>;

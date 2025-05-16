@@ -20,8 +20,10 @@ type
     Button3: TButton;
     Button1: TButton;
     Memo2: TMemo;
+    Button2: TButton;
     procedure Button1Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
   private
     MegaMigrator : TMegaMigration;
     { Private declarations }
@@ -45,6 +47,38 @@ begin
   MegaMigrator := TMegaMigration.Create(self, FDConnection1);
   Memo1.Lines.Text :=  MegaMigrator.GenerateScript;
   ShowMessage('Concluido');
+end;
+
+procedure TForm1.Button2Click(Sender: TObject);
+var
+ splitter : TCommandSplitter;
+ sql : string;
+ comandos : TList<TDDLCommand>;
+  comando : TDDLCommand;
+  objectType: string;
+  commandType: string;
+begin
+   splitter := TCommandSplitter.Create;
+   sql :=  SqlResources.TSqlResources.Read('SQL_sql');
+   comandos :=  splitter.Split(sql);
+
+   Memo1.Clear;
+   Memo2.Clear;
+   Memo2.Lines.Text := sql;
+
+  for comando in  comandos do begin
+    objectType := GetEnumName(TypeInfo(TDBObjectType),
+    integer(comando.ObjectType));
+
+    commandType :=  GetEnumName(TypeInfo(TDDLCommandType),
+    integer(comando.CommandType));
+
+     Memo1.Lines.Add('Name: '+comando.ObjectName+' | Command Type: '+commandType+' | Object Type: '+objectType
+     //+' | Text: '+comando.CommandText
+     );
+
+  end;
+
 end;
 
 procedure TForm1.Button3Click(Sender: TObject);

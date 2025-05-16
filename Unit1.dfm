@@ -58,6 +58,15 @@ object Form1: TForm1
       TabOrder = 1
       OnClick = Button1Click
     end
+    object Button2: TButton
+      Left = 624
+      Top = 10
+      Width = 75
+      Height = 25
+      Caption = 'Split'
+      TabOrder = 2
+      OnClick = Button2Click
+    end
   end
   object Memo2: TMemo
     Left = 0
@@ -86,7 +95,7 @@ object Form1: TForm1
       'Server=localhost'
       'User_Name=SYSDBA')
     LoginPrompt = False
-    Left = 608
-    Top = 24
+    Left = 664
+    Top = 160
   end
 end
