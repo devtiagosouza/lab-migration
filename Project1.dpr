@@ -28,7 +28,9 @@ uses
   Splitters in 'Engine\Parsers\Splitters.pas',
   Parser.Tables in 'Engine\Parsers\Parser.Tables.pas',
   Firebird.Types in 'Engine\Firebird.Types.pas',
-  Parser.Fields in 'Engine\Parsers\Parser.Fields.pas';
+  Parser.Fields in 'Engine\Parsers\Parser.Fields.pas',
+  Parser.Constraints in 'Engine\Parsers\Parser.Constraints.pas',
+  Parser.Indices in 'Engine\Parsers\Parser.Indices.pas';
 
 {$R *.res}
 

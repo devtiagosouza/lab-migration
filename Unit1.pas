@@ -9,7 +9,8 @@ uses
   FireDAC.Stan.Pool, FireDAC.Stan.Async, FireDAC.Phys, FireDAC.Phys.FB,
    FireDAC.Phys.FBDef, FireDAC.VCLUI.Wait,FireDAC.DApt,Model.DBField,
   Data.DB, FireDAC.Comp.Client,MegaMigrator, ClipBrd,Model.DBTable,
-  Vcl.StdCtrls, Sql.Builder,Sql.Script.Builder,DCollections,TypInfo, Vcl.ExtCtrls,Splitters,Parser.Tables;
+  Vcl.StdCtrls, Sql.Builder,Sql.Script.Builder,DCollections,TypInfo, Vcl.ExtCtrls,Splitters,
+  Parser.Tables, Parser.Constraints, Parser.Indices, Model.DBObject;
 
 type
   TForm1 = class(TForm)
@@ -56,14 +57,15 @@ var
   commandType: string;
 
   Tabela : TDBTable;
+  obj : TDBObject;
 begin
   splitter := TCommandSplitter.Create;
-  sql := SqlResources.TSqlResources.Read('SQL_sql');
+  sql :=  SqlResources.TSqlResources.Read('SQL_sql');
   comandos :=  splitter.Split(sql);
 
- comando := comandos.First(function(c : TDDLCommand) : boolean
+  comando := comandos.First(function(c : TDDLCommand) : boolean
   begin
-     result := c.ObjectType = objTable
+     result := c.ObjectType = objPrimaryKey
   end);
 
 
@@ -73,10 +75,11 @@ begin
   Memo1.Lines.Text := sql;
 
 
-  Tabela := TTableParser.Parse(sql);
+
+  obj := TConstraintParser.Parse(comando.CommandText);
 
   Memo2.Clear;
-  Memo2.Lines.Text := Tabela.DDLCreate;
+  Memo2.Lines.Text := obj.DDLCreate;
 
 //  for comando in  comandos do begin
 //    objectType := GetEnumName(TypeInfo(TDBObjectType),

@@ -7,7 +7,7 @@ uses
 
 type
   TDDLCommandType = (ddlUnknown, ddlCreate, ddlAlter, ddlDrop);
-  TDBObjectType = (objUnknown, objTable, objView, objProcedure, objFunction, objTrigger,
+  TDBObjectType = (objUnknown, objTable, objView, objProcedure, objFunction, objTrigger, objPrimaryKey,
                    objIndex, objGenerator);
 
   TDDLCommand = class
@@ -77,6 +77,8 @@ begin
 
   else if TRegEx.IsMatch(SQL, '^\s*CREATE\s+TABLE', [roIgnoreCase]) then
     Result := objTable
+   else if TRegEx.IsMatch(SQL, '^\s*ALTER\s+TABLE\s+(\w+)\s+ADD\s+CONSTRAINT\s+(\w+)\s+PRIMARY\s+KEY\s*\(([^)]+)\)', [roIgnoreCase]) then
+    result := objPrimaryKey
    else if TRegEx.IsMatch(SQL, '^\s*ALTER\s+TABLE', [roIgnoreCase]) then
     Result := objTable
   else if TRegEx.IsMatch(SQL, '^\s*CREATE\s+INDEX', [roIgnoreCase]) then
@@ -84,7 +86,7 @@ begin
   else if TRegEx.IsMatch(SQL, '^\s*CREATE\s+GENERATOR', [roIgnoreCase]) then
     Result := objGenerator
   else if TRegEx.IsMatch(SQL, '^\s*CREATE\s+PRIMARY\s+KEY', [roIgnoreCase]) then
-    Result := objUnknown
+    Result := objPrimaryKey
   else
     Result := objUnknown;
 end;

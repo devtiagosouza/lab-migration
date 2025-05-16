@@ -141,10 +141,11 @@ const sintax = 'ALTER TABLE %s ADD CONSTRAINT %s PRIMARY KEY (%s)';
 begin
    Result := Format(sintax,[ftableName,GetFormatedName(),FOnFields]);
 
-   if (IndexName.ToUpper() <> Name.ToUpper()) then
+   if (IndexName <> '') and (IndexName.ToUpper() <> Name.ToUpper()) then
       Result := Result+' USING '+IfThen(IndexSorting.ToUpper() = 'DESCENDING', IndexSorting.ToUpper(),'')+
       ' INDEX '+IndexName;
 
+   result := Result +';';
 end;
 
 { TDBUnique }

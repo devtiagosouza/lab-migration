@@ -24,7 +24,7 @@ interface
 
     function GetFieldSet : string;
 
-   function DDLCreate: string; override;
+    function DDLCreate: string; override;
 
    function GetFullFieldSet(spacing : integer = 0) : string;
 

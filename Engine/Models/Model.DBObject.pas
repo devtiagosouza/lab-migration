@@ -16,7 +16,6 @@ uses System.SysUtils,FirebirdKeywords, Sql.Builder.SqlTemplate;
        function GetFormatedName: string;
        function DDLCreate : string; virtual;
 
-
    end;
 
 implementation
