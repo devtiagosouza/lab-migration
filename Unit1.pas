@@ -10,7 +10,7 @@ uses
    FireDAC.Phys.FBDef, FireDAC.VCLUI.Wait,FireDAC.DApt,Model.DBField,
   Data.DB, FireDAC.Comp.Client,MegaMigrator, ClipBrd,Model.DBTable,
   Vcl.StdCtrls, Sql.Builder,Sql.Script.Builder,DCollections,TypInfo, Vcl.ExtCtrls,Splitters,
-  Parser.Tables, Parser.Constraints, Parser.Indices, Model.DBObject;
+  Parser.Tables, Parser.Constraints, Parser.Indices, Model.DBObject, Firebird.Types;
 
 type
   TForm1 = class(TForm)
@@ -57,6 +57,7 @@ var
   comando : TDDLCommand;
   objectType: string;
   commandType: string;
+  ddlType : string;
 begin
    splitter := TCommandSplitter.Create;
    sql :=  SqlResources.TSqlResources.Read('SQL_sql');
@@ -73,9 +74,15 @@ begin
     commandType :=  GetEnumName(TypeInfo(TDDLCommandType),
     integer(comando.CommandType));
 
-     Memo1.Lines.Add('Name: '+comando.ObjectName+' | Command Type: '+commandType+' | Object Type: '+objectType
-     //+' | Text: '+comando.CommandText
-     );
+    ddlType := GetEnumName(TypeInfo(TDDLType),
+    integer(comando.DDLType));
+
+//     Memo1.Lines.Add('Name: '+comando.ObjectName+' | Command Type: '+commandType+' | Object Type: '+objectType+' | DDL Type: '+ddlType
+//     //+' | Text: '+comando.CommandText
+//     );
+
+      Memo1.Lines.Add('-- '+ddlType);
+      Memo1.Lines.Add(comando.CommandText+sLineBreak);
 
   end;
 

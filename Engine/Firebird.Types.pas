@@ -5,18 +5,26 @@ interface
 uses
   System.Generics.Collections, System.RegularExpressions;
 
+   type TDDLType = (comUnknown, comCreateIndexOnFields, comCreateIndexComputed,
+                   comCreateConstraintPK, comCreateConstraintUnique, comCreateConstraintCheck, comCreateConstraintFK, comCreateTable,
+                   comCreateField, comCreateOrAlterView, comCreateGenerator,comCreateOrAlterTrigger, comCreateOrAlterProcedure,
+                   comCreateOrAlterFuncion);
+    type TDDLMatch = record
+     DDLType: TDDLType;
+     Regex : string;
+     Match : TMatch;
+  end;
+
   procedure InitializeFirebirdTypes;
   function IsValidFirebirdType(const FieldType: string): Boolean;
   function MatchFirebirdType(const Text: string): TMatch;
+  function MatchDDL(const AText: string) : TDDLMatch;
 
   implementation
 
   uses  System.SysUtils;
 
-  type TDDLType = (comUnknown, comCreateIndexOnFields, comCreateIndexComputed,
-                   comCreateConstraintPK, comCreateConstraintUnique, comCreateConstraintCheck, comCreateConstraintFK, comCreateTable,
-                   comCreateField, comCreateOrAlterView, comCreateGenerator,comCreateOrAlterTrigger, comCreateOrAlterProcedure,
-                   comCreateOrAlterFuncion);
+
 
 type
   TFirebirdTypePattern = record
@@ -24,11 +32,7 @@ type
     RegexPattern: string;
   end;
 
-  type TDDLMatch = record
-     DDLType: TDDLType;
-     Regex : string;
-     Match : TMatch;
-  end;
+
 
 var
   FirebirdTypes: TDictionary<string, string>;
@@ -40,16 +44,24 @@ begin
    DDLPatterns := TDictionary<TDDLType, string>.Create;
 
 
-   DDLPatterns.Add(comCreateTable,'^\s*CREATE|RECREATE\s+TABLE\s+(\w+)');
+   DDLPatterns.Add(comCreateTable,'^\s*CREATE\s+TABLE\s+(\w+)');
+   DDLPatterns.Add(comCreateOrAlterView,'(?is)^\s*CREATE\s+OR\s+ALTER\s+VIEW\s+(\w+)\s*\(\s*([\w\s,]+?)\s*\)\s+AS\s+(.*);?\s*$');
 
    DDLPatterns.Add(comCreateConstraintPK,'^\s*ALTER\s+TABLE\s+(\w+)\s+ADD\s+CONSTRAINT\s+(\w+)\s+PRIMARY\s+KEY\s*\(\s*([^)]+?)\s*\)(?:\s+USING\s+INDEX\s+(\w+))?\s*;?\s*$');
    DDLPatterns.Add(comCreateConstraintUnique,'^\s*ALTER\s+TABLE\s+(\w+)\s+ADD\s+CONSTRAINT\s+(\w+)\s+UNIQUE\s*\(\s*("?[\w\s]+"?(?:\s*,\s*"?[\w\s]+"?)*)\s*\)(?:\s+USING\s+DESCENDING\s+INDEX\s+(\w+))?\s*;?\s*$');
    DDLPatterns.Add(comCreateConstraintCheck,'^\s*ALTER\s+TABLE\s+(\w+)\s+ADD\s+CONSTRAINT\s+(\w+)\s+CHECK\s*\((.*)\)\s*;?\s*$');
-   DDLPatterns.Add(comCreateConstraintFK,('(?im)^\s*ALTER\s+TABLE\s+(\w+)\s+ADD\s+CONSTRAINT\s+(\w+)\s+FOREIGN\s+KEY\s*\(\s*([^)]+?)\s*\)\s+REFERENCES\s+(\w+)\s*\(\s*([^)]+?)\s*\)\s*(ON\s+DELETE\s+\w+(?:\s+ON\s+UPDATE\s+\w+)?)?\s*(USING\s+DESCENDING\s+INDEX\s+\w+)?\s*;?\s*$');
+   DDLPatterns.Add(comCreateConstraintFK,'(?im)^\s*ALTER\s+TABLE\s+(\w+)\s+ADD\s+CONSTRAINT\s+(\w+)\s+FOREIGN\s+KEY\s*\(\s*([^)]+?)\s*\)\s+REFERENCES\s+(\w+)\s*\(\s*([^)]+?)\s*\)\s*(ON\s+DELETE\s+\w+(?:\s+ON\s+UPDATE\s+\w+)?)?\s*(USING\s+DESCENDING\s+INDEX\s+\w+)?\s*;?\s*$');
    //DDLPatterns.Add(comCreateConstraintFK,'^\s*ALTER\s+TABLE\s+(\w+)\s+ADD\s+CONSTRAINT\s+(\w+)\s+FOREIGN\s+KEY\s*\(\s*([^)]+?)\s*\)\s+REFERENCES\s+(\w+)\s*\(\s*([^)]+?)\s*\)(?:\s+ON\s+DELETE\s+(\w+))?(?:\s+ON\s+UPDATE\s+(\w+))?(?:\s+USING\s+DESCENDING\s+INDEX\s+(\w+))?\s*;?\s*$');
 
    DDLPatterns.Add(comCreateIndexOnFields,'^\s*CREATE\s+(UNIQUE DESCENDING|UNIQUE|DESCENDING)?\s*INDEX\s+(\w+)\s+ON\s+(\w+)\s*\(\s*([^)]+?)\s*\)');
    DDLPatterns.Add(comCreateIndexComputed,'^\s*CREATE\s+(UNIQUE DESCENDING|UNIQUE|DESCENDING)?\s*INDEX\s+(\w+)\s+ON\s+(\w+)\s+COMPUTED\s+BY\s*\((.*)\)\s*$');
+
+   DDLPatterns.Add(comCreateGenerator,'^\s*CREATE\s+GENERATOR\s(\w+)?\s*;?\s*$');
+   DDLPatterns.Add(comCreateOrAlterTrigger,'(?is)^\s*CREATE\s+OR\s+ALTER\s+TRIGGER\s+(\w+)\s+FOR\s+(\w+)\s+(ACTIVE|INACTIVE)\s+(.*?)POSITION\s+(\d+)\s+AS\s+(.*END\s*\^?\s*)$');
+
+   DDLPatterns.Add(comCreateOrAlterProcedure,'(?is)^\s*CREATE\s+OR\s+ALTER\s+PROCEDURE\s+(\w+)(?:\s*\((.*?)\))?(?:\s*RETURNS\s*\((.*?)\))?\s*AS\s+(.*END\s*\^?\s*)$');
+   DDLPatterns.Add(comCreateOrAlterFuncion,'(?is)^\s*CREATE\s+OR\s+ALTER\s+FUNCTION\s+(\w+)(?:\s*\((.*?)\))?\s+RETURNS\s+([\w\s\(\),]+?)\s+AS\s+(.*END\s*\^?\s*)$');
+   DDLPatterns.Add(comCreateField,'^\s*ALTER\s+TABLE\s+(\w+)\s+ADD\s+(?!CONSTRAINT\s)(\w+)\s+(.+)$');
 end;
 
 procedure InitializeFirebirdTypes;
@@ -87,7 +99,7 @@ begin
 
   for Pair in DDLPatterns do
   begin
-    Regex := TRegEx.Create(Pair.Value, [roIgnoreCase]);
+    Regex := TRegEx.Create(Pair.Value, [roIgnoreCase, roSingleLine]);
     M := Regex.Match(AText);
     if M.Success then
     begin

@@ -3,7 +3,7 @@ unit Splitters;
 interface
 
 uses
-  System.SysUtils, System.Classes, DCollections,  System.RegularExpressions, System.StrUtils, ClipBrd;
+  System.SysUtils, System.Classes, Firebird.Types, DCollections,  System.RegularExpressions, System.StrUtils, ClipBrd;
 
 type
   TDDLCommandType = (ddlUnknown, ddlCreate, ddlAlter, ddlDrop);
@@ -15,6 +15,7 @@ type
     CommandText: string;
     CommandType: TDDLCommandType;
     ObjectType: TDBObjectType;
+    DDLType :   TDDLType;
     ObjectName: string;
   end;
 
@@ -61,10 +62,26 @@ begin
 end;
 
 
+
+
 function TCommandSplitter.DetectObjectType(const SQL: string): TDBObjectType;
 var
   Regex: TRegEx;
+  DDL : TDDLMatch;
 begin
+
+//  DDL := MatchDDL(SQL);
+//  Case DDL.DDLType of
+//     comUnknown : Result := objUnknown;
+//     comCreateIndexOnFields: Result := objIndex;
+//     comCreateIndexComputed: Result := objIndex;
+//     comCreateConstraintPK : Result := objPrimaryKey;
+//     comCreateConstraintUnique : Result := objIndex;
+//     comCreateConstraintCheck : Result := objIndex;
+//     comcreate
+//  end;
+
+
   if TRegEx.IsMatch(SQL, '^\s*CREATE\s+OR\s+ALTER\s+TRIGGER', [roIgnoreCase]) then
     Result := objTrigger
   else if TRegEx.IsMatch(SQL, '^\s*CREATE\s+OR\s+ALTER\s+PROCEDURE', [roIgnoreCase]) then
@@ -221,6 +238,7 @@ begin
     Command.CommandType := DetectCommandType(CleanSQL);
     Command.ObjectType := DetectObjectType(CleanSQL);
     Command.ObjectName := ExtractObjectName(CleanSQL);
+    Command.DDLType := MatchDDL(CleanSQL).DDLType;
 
     ResultList.Add(Command);
   end;
