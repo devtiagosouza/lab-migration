@@ -28,6 +28,8 @@ interface
 
    function GetFullFieldSet(spacing : integer = 0) : string;
 
+   constructor Create();
+
  end;
 
 implementation
@@ -36,6 +38,12 @@ implementation
 
 { TDBField }
 
+
+constructor TDBField.Create();
+begin
+  inherited Create;
+  ObjectTypeFriendlyName := 'Campo';
+end;
 
 function TDBField.DDLCreate: string;
 begin

@@ -2,17 +2,18 @@ unit Migration.ClassWriter;
 
 interface
 
-uses DelphiUnitWriter, Model.DBObject, DCollections, System.Generics.Collections, System.SysUtils;
+uses DelphiUnitWriter,System.RegularExpressions, Model.DBObject, DCollections,System.Rtti, System.Generics.Collections, System.SysUtils;
 
 Type TMigrationClassWriter = class(TDelphiUnitWriter)
 
 private
    FPath : string;
-
+   function MaxLengthFromLines(lines : TArray<string>) : integer;
 public
     constructor Create(APath : string);
 
      procedure SavePas<T : TDBObject>(ADBObjects : TList<T>);
+
 end;
 
 implementation
@@ -25,6 +26,24 @@ begin
   FPath := APath;
 end;
 
+function TMigrationClassWriter.MaxLengthFromLines(
+  lines: TArray<string>): integer;
+  var
+  line: string;
+  MaxLength, LengthNome: Integer;
+begin
+  MaxLength := 0;
+
+  for line in lines do
+  begin
+    LengthNome := Length(line);
+    if LengthNome > MaxLength then
+      MaxLength := LengthNome;
+  end;
+
+  Result := MaxLength;
+end;
+
 procedure TMigrationClassWriter.SavePas<T>(ADBObjects: TList<T>);
 var
  dbObject : TDBObject;
@@ -33,35 +52,52 @@ var
  i : integer;
  comms : TArray<string>;
  tipoObjeto : string;
+ maxLength : integer;
+ whiteSpace : integer;
+ space : string;
+ className : string;
+ objectTypeName : string;
+ Regex : TRegEx;
 begin
 
     UsesDeclaration := 'System.SysUtils, System.Classes, Model.DBTable, Migration';
     ConstructorBody := '';
     MainClass := 'TMigration';
 
-
-
     for dbObject in ADBObjects do begin
 
-        UnitName := 'Migrations.Tabelas';
-        ClassName := 'TMigrationTables';
+       UnitName := 'Migration.'+dbObject.ObjectTypeFriendlyName+'s';
+       self.ClassName := 'TMigration'+dbObject.ObjectTypeFriendlyName+'s';
 
        comms := dbObject.DDLCreate.Split([sLineBreak]);
+       maxLength := MaxLengthFromLines(comms);
        for i := 0 to length(comms) - 1 do begin
+          line := comms[i];
+
+           Regex := TRegEx.Create('/\*[\s\S]*?\*/', [roIgnoreCase]);
+           line := Regex.Replace(line, '');
+
+
+
+
+          whiteSpace := maxLength - (QuotedStr(line).length - 2);
+
+          space := StringOfChar(' ',whiteSpace);
 
           if (i < length(comms) - 1) then
-             script := script + QuotedStr(comms[i])+'+sLineBreak+'+sLineBreak
-          else script := script + QuotedStr(comms[i]);
-
+             script := script + QuotedStr(line+space)+'+sLineBreak+'+sLineBreak
+          else script := script + QuotedStr(line+space);
 
        end;
 
-
-       AddMethod(mehodProcedure,'_'+dbObject.Name,
-        'AddScript('+script+');'
+       AddMethod(mehodProcedure,dbObject.ObjectTypeFriendlyName+'_'+dbObject.Name,
+        'AddScript('+slineBreak+
+          script+');'
         );
 
     end;
+
+
 
     SaveUnitFile(FPath);
 end;

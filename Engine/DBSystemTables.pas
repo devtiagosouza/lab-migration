@@ -410,7 +410,8 @@ procedure TDBSystemTables.Load;
 begin
    LoadGenerators;
    LoadTriggers;
-   LoadTablesAndViews('trim(t.rdb$relation_name) = '+QuotedStr('ABASTECIMENTO'));
+   //LoadTablesAndViews('trim(t.rdb$relation_name) = '+QuotedStr('ABASTECIMENTO'));
+   LoadTablesAndViews();
 //   LoadProcedures;
    //LoadFunctions;
 
@@ -524,7 +525,7 @@ begin
      isTable := FQueryTables.FieldByName('SOURCE').IsNull;
 
      if (isTable) then begin
-        vTable := TDBTable.Create(nil);
+        vTable := TDBTable.Create;
         vTable.Name := name;
         vTable.Fields := GetFields(name);
         vTable.PrimaryKeys := GetPrimaryKeys(name);

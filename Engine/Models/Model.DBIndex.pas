@@ -21,6 +21,8 @@ public
 
    function DDLCreate: string; override;
 
+   constructor Create();
+
 end;
 
 type TDBForeignKey = class(TDBObject)
@@ -48,6 +50,8 @@ public
 
     function DDLCreate: string; override;
 
+     constructor Create();
+
 end;
 
 
@@ -62,6 +66,8 @@ public
     property Source: string read FSource write FSource;
 
     function DDLCreate: string; override;
+
+    constructor Create();
 end;
 
 
@@ -80,6 +86,8 @@ public
     property IndexSorting: string read FIndexSorting write FIndexSorting;
 
     function DDLCreate: string; override;
+
+    constructor Create();
 end;
 
 
@@ -107,6 +115,7 @@ public
     property Active : boolean read FActive write FActive;
     property Sorting : string read FSorting write FSorting;
 
+    constructor Create();
 
     function DDLCreate: string; override;
 
@@ -115,6 +124,12 @@ end;
 implementation
 
 { TDBIndex }
+
+constructor TDBIndex.Create();
+begin
+  inherited Create;
+  ObjectTypeFriendlyName := 'Indice';
+end;
 
 function TDBIndex.DDLCreate: string;
 var
@@ -136,6 +151,12 @@ end;
 
 { TDBPrimaryKey }
 
+constructor TDBPrimaryKey.Create();
+begin
+  inherited;
+  ObjectTypeFriendlyName := 'Contraint';
+end;
+
 function TDBPrimaryKey.DDLCreate: string;
 const sintax = 'ALTER TABLE %s ADD CONSTRAINT %s PRIMARY KEY (%s)';
 begin
@@ -150,6 +171,13 @@ end;
 
 { TDBUnique }
 
+constructor TDBUnique.Create();
+begin
+  inherited Create;
+  ObjectTypeFriendlyName := 'ConstraintUnique';
+
+end;
+
 function TDBUnique.DDLCreate: string;
 const sintax = 'ALTER TABLE %s ADD CONSTRAINT %s UNIQUE (%s)';
 begin
@@ -162,6 +190,12 @@ end;
 
 { TDBForeignKey }
 
+constructor TDBForeignKey.Create;
+begin
+  inherited Create;
+  ObjectTypeFriendlyName := 'Constraint';
+end;
+
 function TDBForeignKey.DDLCreate: string;
 const sintax = 'ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s(%s)';
 begin
@@ -172,6 +206,12 @@ begin
 end;
 
 { TDBCheck }
+
+constructor TDBCheck.Create();
+begin
+  inherited Create;
+  ObjectTypeFriendlyName := 'Constraint';
+end;
 
 function TDBCheck.DDLCreate: string;
 const sintax = 'ALTER TABLE %s ADD CONSTRAINT %s %s';

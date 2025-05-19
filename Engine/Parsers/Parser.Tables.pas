@@ -22,7 +22,7 @@ var
   ColumnsSection: string;
   Match : TMatch;
 begin
-  Table := TDBTable.Create(nil);
+  Table := TDBTable.Create;
 
   Match := TRegEx.Match(TableDDL, 'CREATE\s+TABLE\s+(\w+)', [roIgnoreCase]);
   if Match.Success then

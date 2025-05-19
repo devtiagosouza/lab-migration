@@ -19,12 +19,21 @@ interface
 
       function DDLCreate: string; override;
 
+      constructor Create();
+
   end;
 
 
 implementation
 
 { TDBGenerator }
+
+constructor TDBGenerator.Create();
+begin
+  inherited Create;
+  ObjectTypeFriendlyName := 'Generator';
+
+end;
 
 function TDBGenerator.DDLCreate: string;
 begin

@@ -129,7 +129,6 @@
         <DCCReference Include="Engine\Parsers\Parser.Functions.pas"/>
         <DCCReference Include="Engine\Parsers\Parser.Triggers.pas"/>
         <DCCReference Include="Engine\DelphiUnitWriter.pas"/>
-        <DCCReference Include="_migrations\Migrations.Tabelas.pas"/>
         <DCCReference Include="Migration.ClassWriter.pas"/>
         <RcItem Include="Engine\Resources\QUERY_TABLES_AND_VIEWS.sql">
             <ContainerId>ResourceItem</ContainerId>

@@ -30,7 +30,7 @@ interface
       function DDLCreate: string; override;
 
 
-      constructor Create(AOwner: TComponent);
+      constructor Create();
 
 
 
@@ -42,7 +42,7 @@ implementation
 
 { TDBTable }
 
-constructor TDBTable.Create(AOwner: TComponent);
+constructor TDBTable.Create();
 begin
   FFields := TList<TDBField>.create;
   FPrimaryKeys := TList<TDBPrimaryKey>.Create;
@@ -51,6 +51,7 @@ begin
   FUniqueConstraints := TList<TDBUnique>.Create;
   FIndices := TList<TDBIndex>.Create;
   FTriggers := TList<TDBTrigger>.Create;
+  ObjectTypeFriendlyName := 'Tabela';
 end;
 
 function TDBTable.DDLCreate: string;

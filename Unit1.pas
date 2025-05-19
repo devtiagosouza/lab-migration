@@ -48,7 +48,8 @@ procedure TForm1.Button1Click(Sender: TObject);
 begin
   FDConnection1.Open();
   MegaMigrator := TMegaMigration.Create(self, FDConnection1);
-  Memo1.Lines.Text :=  MegaMigrator.GenerateScript;
+  //Memo1.Lines.Text :=
+  MegaMigrator.GenerateScript;
   MegaMigrator.SaveClasses;
   ShowMessage('Concluido');
 end;

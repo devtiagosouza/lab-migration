@@ -29,7 +29,9 @@ implementation
 
 constructor TDBFunction.Create();
 begin
+   inherited Create;
    FInputFields := TList<TDBField>.Create;
+   ObjectTypeFriendlyName := 'Function';
 end;
 
 function TDBFunction.DDLCreate: string;

@@ -77,7 +77,13 @@ var
   i: Integer;
   vProc : TMethod;
   line : string;
+  arq: TextFile;
 begin
+  if (FileExists(Path+'\'+UnitName+'.pas')) then
+     DeleteFile(Path+'\'+UnitName+'.pas');
+
+
+
     SL := TStringList.Create;
   try
     // unit header
@@ -103,7 +109,6 @@ begin
     begin
       vProc := FProcedureList[i];
       SL.Add('    '+ifthen(vProc.MethodType = mehodProcedure,'procedure','function')+' '+vProc.Declaration+';');
-      SL.Add('');
     end;
 
     SL.Add('    constructor Create;');
@@ -147,7 +152,19 @@ begin
     SL.Add('end.');
 
 
-    SL.SaveToFile(Path+'\'+UnitName+'.pas', TEncoding.ANSI);
+
+     ForceDirectories(Path);
+
+     AssignFile(arq, Path+'\'+UnitName+'.pas');
+     Rewrite(arq);
+
+    for i := 0 to Sl.Count - 1 do begin
+       Writeln(arq, SL[i]);
+    end;
+    CloseFile(arq);
+
+
+   // SL.SaveToFile(Path+'\'+UnitName+'.pas', TEncoding.ANSI);
   finally
     SL.Free;
   end;
