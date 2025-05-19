@@ -19,12 +19,18 @@ interface
 
       function DDLCreate: string; override;
 
+      constructor Create();
   end;
 
 
 implementation
 
 { TDBFunction }
+
+constructor TDBFunction.Create();
+begin
+   FInputFields := TList<TDBField>.Create;
+end;
 
 function TDBFunction.DDLCreate: string;
 var
@@ -55,11 +61,10 @@ begin
 
 
    sql.AppendLine('AS')
-      .AppendLine(FunctionSource)
-      .Append('^');
+      .AppendLine(FunctionSource);
 
 
-  result := sql.AsString;
+  result := sql.AsString('^');
 end;
 
 End.

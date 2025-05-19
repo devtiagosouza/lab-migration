@@ -130,7 +130,7 @@ begin
       .SetPar('FIELDS',string.IsNullOrEmpty(FOnFields) = false,'('+FOnFields+')','COMPUTED BY '+FExpression);
 
 
-      result := sql.AsString();
+      result := sql.AsString(';');
 
 end;
 

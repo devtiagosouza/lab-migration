@@ -41,7 +41,7 @@ object Form1: TForm1
     Caption = 'Panel1'
     TabOrder = 1
     object Button3: TButton
-      Left = 360
+      Left = 336
       Top = 10
       Width = 75
       Height = 25
@@ -66,6 +66,24 @@ object Form1: TForm1
       Caption = 'Split'
       TabOrder = 2
       OnClick = Button2Click
+    end
+    object Button4: TButton
+      Left = 520
+      Top = 10
+      Width = 75
+      Height = 25
+      Caption = 'Testando'
+      TabOrder = 3
+      OnClick = Button4Click
+    end
+    object Button5: TButton
+      Left = 705
+      Top = 10
+      Width = 75
+      Height = 25
+      Caption = 'Button5'
+      TabOrder = 4
+      OnClick = Button5Click
     end
   end
   object Memo2: TMemo

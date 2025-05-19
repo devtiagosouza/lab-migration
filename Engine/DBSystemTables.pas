@@ -2,7 +2,8 @@ unit DBSystemTables;
 
 interface
   uses Model.DBObject, Model.DBTable, Model.DBField, Model.DBView, Model.DBProcedure, Model.DBFunction, Model.DBTrigger,
-  Model.DBGenerator,Model.DBIndex, System.Classes,FireDAC.Comp.Client,SqlResources, System.SysUtils, DCollections;
+  Model.DBGenerator,Model.DBIndex, System.Classes,FireDAC.Comp.Client,SqlResources,
+  System.SysUtils, DCollections;
 
 
 type TDBSystemTables = class
@@ -28,6 +29,8 @@ private
     FTriggers: TList<TDBTrigger>;
     FGenerators: TList<TDBGenerator>;
     FIndices: TList<TDBIndex>;
+
+
 
 
     procedure LoadTablesAndViews(aWhere : string = '');
@@ -98,6 +101,8 @@ begin
    FQueryGenerator.Connection := AConnection;
    FQueryFunctions.Connection := AConnection;
    FQueryFields.Connection := AConnection;
+
+
 end;
 
 function TDBSystemTables.GetCheckConstraints(
@@ -403,11 +408,11 @@ end;
 
 procedure TDBSystemTables.Load;
 begin
-  // LoadGenerators;
-   //LoadTriggers;
-  // LoadTablesAndViews('trim(t.rdb$relation_name) = '+QuotedStr('WABASTECIMENTOS'));
+   LoadGenerators;
+   LoadTriggers;
+   LoadTablesAndViews('trim(t.rdb$relation_name) = '+QuotedStr('ABASTECIMENTO'));
 //   LoadProcedures;
-   LoadFunctions;
+   //LoadFunctions;
 
 
  //  LoadIndices;
@@ -567,7 +572,6 @@ begin
     vTrigger.TriggerSource := FQueryTrigger.FieldByName('TRIGGER_SOURCE').AsString;
     vTrigger.TriggerType :=  TTriggerType(FQueryTrigger.FieldByName('TRIGGER_TYPE').asInteger);
     vTrigger.TriggerPosition := FQueryTrigger.FieldByName('TRIGGER_POSITION').AsInteger;
-    vTrigger.IsForGenerator := FQueryTrigger.FieldByName('IS_FOR_GENERATOR').AsString = 'S';
     vTrigger.IsActive := FQueryTrigger.FieldByName('IS_ACTIVE').AsString = 'S';
 
     vTrigger.Generators := Generators.Where(function(g : TDBGenerator) : boolean

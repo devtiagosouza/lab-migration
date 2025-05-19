@@ -16,12 +16,20 @@ public
    property FieldList : TStringList read FFieldList write FFieldList;
 
    function DDLCreate: string; override;
+
+   constructor Create();
 end;
 
 
 implementation
 
 { TDBView }
+
+constructor TDBView.Create();
+begin
+   FFieldList := TStringList.Create;
+
+end;
 
 function TDBView.DDLCreate: string;
 begin
@@ -32,8 +40,7 @@ begin
                 .Append(')')
                 .AppendLine('AS')
                 .AppendLine(ViewSource)
-                .AppendLine(';')
-                .asString;
+                .AsString(';');
 
 
 end;

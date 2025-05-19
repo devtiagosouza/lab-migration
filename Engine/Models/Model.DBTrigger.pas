@@ -4,7 +4,8 @@ unit Model.DBTrigger;
 
 interface
 
-  uses Model.DBObject, Model.DBGenerator, DCollections, TypInfo,  System.Classes, System.SysUtils, System.StrUtils;
+  uses Model.DBObject,System.TypInfo, Model.DBGenerator,System.Generics.Collections, DCollections,
+    System.Classes, System.SysUtils, System.StrUtils,System.RegularExpressions;
 
 
 
@@ -39,11 +40,13 @@ interface
     FTableName: string;
     FTriggerType: TTriggerType;
     FTriggerPosition: integer;
-    FIsForGenerator: boolean;
     FIsActive: boolean;
     FGenerators: TList<TDBGenerator>;
 
     function TriggerTypeToString(Value: TTriggerType): string;
+    function ExtrairGenerators(): TArray<string>;
+    function GetIsForGenerator: boolean;
+
 
   public
 
@@ -51,11 +54,15 @@ interface
       property TriggerSource : string read FTriggerSource write FTriggerSource;
       property TriggerType : TTriggerType read FTriggerType write FTriggerType;
       property TriggerPosition : integer read FTriggerPosition write FTriggerPosition;
-      property IsForGenerator : boolean read FIsForGenerator write FIsForGenerator;
+      property IsForGenerator : boolean read GetIsForGenerator;
       property IsActive : boolean read FIsActive write FIsActive;
       property Generators : TList<TDBGenerator> read FGenerators write FGenerators;
 
       function DDLCreate: string; override;
+
+
+      procedure SetTriggerTypeFromString(Value: string);
+
 
       constructor Create();
   end;
@@ -93,6 +100,71 @@ begin
   end;
 
 end;
+
+function TDBTrigger.ExtrairGenerators(): TArray<string>;
+var
+  Regex: TRegEx;
+  MatchCollection: TMatchCollection;
+  i: Integer;
+begin
+  Regex := TRegEx.Create('GEN_ID\(([^,]+),\d+\)');
+  MatchCollection := Regex.Matches(TriggerSource);
+
+  SetLength(Result, MatchCollection.Count);
+
+
+
+  for i := 0 to MatchCollection.Count - 1 do
+  begin
+    Result[i] := MatchCollection.Item[i].Groups[1].Value;  // Pega o nome do generator
+  end;
+end;
+
+function TDBTrigger.GetIsForGenerator: boolean;
+var
+  gens : TArray<string>;
+begin
+   gens := ExtrairGenerators;
+   result := (gens <> nil) and (Length(gens) > 0);
+end;
+
+procedure TDBTrigger.SetTriggerTypeFromString(Value: string);
+var
+  TriggerTypeMap: TDictionary<string, TTriggerType>;
+begin
+  value := Value.Trim.Replace(' ','_');
+
+  TriggerTypeMap := TDictionary<string, TTriggerType>.Create;
+  try
+
+    TriggerTypeMap.Add('BEFORE_INSERT', BEFORE_INSERT);
+    TriggerTypeMap.Add('AFTER_INSERT', AFTER_INSERT);
+    TriggerTypeMap.Add('BEFORE_UPDATE', BEFORE_UPDATE);
+    TriggerTypeMap.Add('AFTER_UPDATE', AFTER_UPDATE);
+    TriggerTypeMap.Add('BEFORE_DELETE', BEFORE_DELETE);
+    TriggerTypeMap.Add('AFTER_DELETE', AFTER_DELETE);
+    TriggerTypeMap.Add('BEFORE_INSERT_OR_UPDATE', BEFORE_INSERT_OR_UPDATE);
+    TriggerTypeMap.Add('AFTER_INSERT_OR_UPDATE', AFTER_INSERT_OR_UPDATE);
+    TriggerTypeMap.Add('BEFORE_INSERT_OR_DELETE', BEFORE_INSERT_OR_DELETE);
+    TriggerTypeMap.Add('AFTER_INSERT_OR_DELETE', AFTER_INSERT_OR_DELETE);
+    TriggerTypeMap.Add('BEFORE_UPDATE_OR_DELETE', BEFORE_UPDATE_OR_DELETE);
+    TriggerTypeMap.Add('AFTER_UPDATE_OR_DELETE', AFTER_UPDATE_OR_DELETE);
+    TriggerTypeMap.Add('BEFORE_INSERT_OR_UPDATE_OR_DELETE', BEFORE_INSERT_OR_UPDATE_OR_DELETE);
+    TriggerTypeMap.Add('AFTER_INSERT_OR_UPDATE_OR_DELETE', AFTER_INSERT_OR_UPDATE_OR_DELETE);
+    TriggerTypeMap.Add('ON_CONNECT', ON_CONNECT);
+    TriggerTypeMap.Add('ON_DISCONNECT', ON_DISCONNECT);
+    TriggerTypeMap.Add('ON_TRANSACTION_START', ON_TRANSACTION_START);
+    TriggerTypeMap.Add('ON_TRANSACTION_COMMIT', ON_TRANSACTION_COMMIT);
+    TriggerTypeMap.Add('ON_TRANSACTION_ROLLBACK', ON_TRANSACTION_ROLLBACK);
+
+    // Verifica se a string existe no dicionário e atribui o valor correspondente
+    if not TriggerTypeMap.TryGetValue(Value, FTriggerType) then
+      raise Exception.Create('Valor inválido para o TriggerType: ' + Value);
+  finally
+    TriggerTypeMap.Free;
+  end;
+end;
+
 
 function TDBTrigger.TriggerTypeToString(Value: TTriggerType): string;
 begin

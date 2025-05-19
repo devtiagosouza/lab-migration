@@ -8,7 +8,7 @@ uses
    type TDDLType = (comUnknown, comCreateIndexOnFields, comCreateIndexComputed,
                    comCreateConstraintPK, comCreateConstraintUnique, comCreateConstraintCheck, comCreateConstraintFK, comCreateTable,
                    comCreateField, comCreateOrAlterView, comCreateGenerator,comCreateOrAlterTrigger, comCreateOrAlterProcedure,
-                   comCreateOrAlterFuncion);
+                   comCreateOrAlterFunction);
     type TDDLMatch = record
      DDLType: TDDLType;
      Regex : string;
@@ -19,6 +19,7 @@ uses
   function IsValidFirebirdType(const FieldType: string): Boolean;
   function MatchFirebirdType(const Text: string): TMatch;
   function MatchDDL(const AText: string) : TDDLMatch;
+  function GetPattern(ADDLCommand : TDDLType) : string;
 
   implementation
 
@@ -60,7 +61,7 @@ begin
    DDLPatterns.Add(comCreateOrAlterTrigger,'(?is)^\s*CREATE\s+OR\s+ALTER\s+TRIGGER\s+(\w+)\s+FOR\s+(\w+)\s+(ACTIVE|INACTIVE)\s+(.*?)POSITION\s+(\d+)\s+AS\s+(.*END\s*\^?\s*)$');
 
    DDLPatterns.Add(comCreateOrAlterProcedure,'(?is)^\s*CREATE\s+OR\s+ALTER\s+PROCEDURE\s+(\w+)(?:\s*\((.*?)\))?(?:\s*RETURNS\s*\((.*?)\))?\s*AS\s+(.*END\s*\^?\s*)$');
-   DDLPatterns.Add(comCreateOrAlterFuncion,'(?is)^\s*CREATE\s+OR\s+ALTER\s+FUNCTION\s+(\w+)(?:\s*\((.*?)\))?\s+RETURNS\s+([\w\s\(\),]+?)\s+AS\s+(.*END\s*\^?\s*)$');
+   DDLPatterns.Add(comCreateOrAlterFunction,'(?is)^\s*CREATE\s+OR\s+ALTER\s+FUNCTION\s+(\w+)(?:\s*\((.*?)\))?\s+RETURNS\s+([\w\s\(\),]+?)\s+AS\s+(.*END\s*\^?\s*)$');
    DDLPatterns.Add(comCreateField,'^\s*ALTER\s+TABLE\s+(\w+)\s+ADD\s+(?!CONSTRAINT\s)(\w+)\s+(.+)$');
 end;
 
@@ -109,6 +110,14 @@ begin
       Exit;
     end;
   end;
+end;
+
+function GetPattern(ADDLCommand : TDDLType) : string;
+var
+  pair : TPair<TDDLType,String>;
+begin
+  pair := DDLPatterns.ExtractPair(ADDLCommand);
+  Result := pair.Value;
 end;
 
 { Retorna o primeiro match válido da lista de regex do dicionário Firebird }

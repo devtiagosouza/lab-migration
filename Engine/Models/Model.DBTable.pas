@@ -106,9 +106,9 @@ begin
     end;
 
     Sql.DecIndent
-        .AppendLine(');');
+        .AppendLine(')');
 
-    Script.AppendLine(Sql.AsString);
+    Script.AppendLine(Sql.AsString(';'));
 
 
 

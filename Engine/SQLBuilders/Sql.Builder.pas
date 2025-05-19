@@ -26,7 +26,7 @@ uses
 
       function AsTemplate() : ISQLTemplate;
 
-      function AsString: string;
+      function AsString(CommandDelimiter : Char): string;
    end;
 
 
@@ -48,11 +48,11 @@ uses
     function ResetIndent: ISQLBuilder;
 
 
-     function AsTemplate() : ISQLTemplate;
+    function AsTemplate() : ISQLTemplate;
 
     constructor Create;
     destructor Destroy; override;
-    function AsString: string;
+    function AsString(CommandDelimiter : char): string;
   end;
 
 implementation
@@ -147,14 +147,18 @@ begin
 end;
 
 
-function TSQLBuilder.AsString: string;
+function TSQLBuilder.AsString(CommandDelimiter : char): string;
 begin
    Result := FStrings.ToString;
+
+  if (Result.Trim.Replace(sLineBreak,'').EndsWith(CommandDelimiter) = false) and (CommandDelimiter <> '') then
+      Result := Result+CommandDelimiter;
+
 end;
 
 function TSQLBuilder.AsTemplate: ISQLTemplate;
 begin
-   result := TSQLTemplate.Create(AsString);
+   result := TSQLTemplate.Create(FStrings.ToString);
 end;
 
 end.

@@ -12,7 +12,7 @@ type
     function SetPar(const Name: string; const Value: string; const considerReservedWords : boolean = false): ISQLTemplate; overload;
     function SetPar(const Name: string; const ACondition : boolean; const ATrue: string; const aFalse: string;const considerReservedWords : boolean = false): ISQLTemplate; overload;
     function SetPar(const Name: string; const Enabled: Boolean; const considerReservedWords : boolean = false): ISQLTemplate; overload;
-    function AsString(finalizator : string = ''): string;
+    function AsString(CommandDelimiter : char): string;
   end;
 
 
@@ -30,7 +30,7 @@ TSQLTemplate = class(TInterfacedObject, ISQLTemplate)
     function SetPar(const Name: string; const Value: string;const considerReservedWords : boolean = false): ISQLTemplate; overload;
     function SetPar(const Name: string; const ACondition : boolean; const ATrue: string; const aFalse: string;const considerReservedWords : boolean = false): ISQLTemplate; overload;
     function SetPar(const Name: string; const Enabled: Boolean;const considerReservedWords : boolean = false): ISQLTemplate; overload;
-    function AsString(finalizator : string = ''): string;
+    function AsString(CommandDelimiter : char): string;
   end;
 
 implementation
@@ -78,7 +78,7 @@ begin
   Result := Self;
 end;
 
-function TSQLTemplate.AsString(finalizator : string = ''): string;
+function TSQLTemplate.AsString(CommandDelimiter : char): string;
 var
   Key, Output: string;
   Match: TMatch;
@@ -103,7 +103,12 @@ begin
   Output := TRegEx.Replace(Output, '\s*\n\s*', sLineBreak);
   Output := Output.Trim;
 
-  Result := Output+ifthen(string.IsNullOrEmpty(finalizator),'',finalizator);
+  if (Output.Trim.Replace(sLineBreak,'').EndsWith(CommandDelimiter) = false) and (CommandDelimiter <> '') then
+      Output := Output+CommandDelimiter;
+
+  Result := Output;
+
+
 end;
 
 

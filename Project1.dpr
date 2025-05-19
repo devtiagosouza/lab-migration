@@ -22,7 +22,7 @@ uses
   Sql.Builder in 'Engine\SQLBuilders\Sql.Builder.pas',
   Sql.Builder.SqlTemplate in 'Engine\SQLBuilders\Sql.Builder.SqlTemplate.pas',
   Sql.Script.Builder in 'Engine\SQLBuilders\Sql.Script.Builder.pas',
-  Migration in 'Engine\Migration.pas',
+  Migration in 'Migration.pas',
   Parser.Interfaces in 'Engine\Parsers\Parser.Interfaces.pas',
   Parser.Procedures in 'Engine\Parsers\Parser.Procedures.pas',
   Splitters in 'Engine\Parsers\Splitters.pas',
@@ -30,7 +30,13 @@ uses
   Firebird.Types in 'Engine\Firebird.Types.pas',
   Parser.Fields in 'Engine\Parsers\Parser.Fields.pas',
   Parser.Constraints in 'Engine\Parsers\Parser.Constraints.pas',
-  Parser.Indices in 'Engine\Parsers\Parser.Indices.pas';
+  Parser.Indices in 'Engine\Parsers\Parser.Indices.pas',
+  Parser.Views in 'Engine\Parsers\Parser.Views.pas',
+  Parser.Functions in 'Engine\Parsers\Parser.Functions.pas',
+  Parser.Triggers in 'Engine\Parsers\Parser.Triggers.pas',
+  DelphiUnitWriter in 'Engine\DelphiUnitWriter.pas',
+  Migrations.Tabelas in '_migrations\Migrations.Tabelas.pas',
+  Migration.ClassWriter in 'Migration.ClassWriter.pas';
 
 {$R *.res}
 

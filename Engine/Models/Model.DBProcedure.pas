@@ -18,12 +18,21 @@ interface
 
 
      function DDLCreate: string; override;
+
+     constructor Create();
   end;
 
 
 implementation
 
 { TDBProcedure }
+
+constructor TDBProcedure.Create();
+begin
+  InputFields := TList<TDBField>.Create;
+  OutputFields := TList<TDBField>.Create;
+
+end;
 
 function TDBProcedure.DDLCreate: string;
 var
@@ -72,11 +81,10 @@ begin
    sql.ResetIndent;
 
    sql.AppendLine('AS')
-      .AppendLine(ProcedureSource)
-      .Append('^');
+      .AppendLine(ProcedureSource);
 
 
-  result := sql.AsString;
+  result := sql.AsString('^');
 end;
 
 End.

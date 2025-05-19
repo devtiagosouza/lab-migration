@@ -116,7 +116,7 @@
         <DCCReference Include="Engine\SQLBuilders\Sql.Builder.pas"/>
         <DCCReference Include="Engine\SQLBuilders\Sql.Builder.SqlTemplate.pas"/>
         <DCCReference Include="Engine\SQLBuilders\Sql.Script.Builder.pas"/>
-        <DCCReference Include="Engine\Migration.pas"/>
+        <DCCReference Include="Migration.pas"/>
         <DCCReference Include="Engine\Parsers\Parser.Interfaces.pas"/>
         <DCCReference Include="Engine\Parsers\Parser.Procedures.pas"/>
         <DCCReference Include="Engine\Parsers\Splitters.pas"/>
@@ -125,6 +125,12 @@
         <DCCReference Include="Engine\Parsers\Parser.Fields.pas"/>
         <DCCReference Include="Engine\Parsers\Parser.Constraints.pas"/>
         <DCCReference Include="Engine\Parsers\Parser.Indices.pas"/>
+        <DCCReference Include="Engine\Parsers\Parser.Views.pas"/>
+        <DCCReference Include="Engine\Parsers\Parser.Functions.pas"/>
+        <DCCReference Include="Engine\Parsers\Parser.Triggers.pas"/>
+        <DCCReference Include="Engine\DelphiUnitWriter.pas"/>
+        <DCCReference Include="_migrations\Migrations.Tabelas.pas"/>
+        <DCCReference Include="Migration.ClassWriter.pas"/>
         <RcItem Include="Engine\Resources\QUERY_TABLES_AND_VIEWS.sql">
             <ContainerId>ResourceItem</ContainerId>
             <ResourceType>RCDATA</ResourceType>

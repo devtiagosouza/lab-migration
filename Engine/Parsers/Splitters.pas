@@ -70,18 +70,6 @@ var
   DDL : TDDLMatch;
 begin
 
-//  DDL := MatchDDL(SQL);
-//  Case DDL.DDLType of
-//     comUnknown : Result := objUnknown;
-//     comCreateIndexOnFields: Result := objIndex;
-//     comCreateIndexComputed: Result := objIndex;
-//     comCreateConstraintPK : Result := objPrimaryKey;
-//     comCreateConstraintUnique : Result := objIndex;
-//     comCreateConstraintCheck : Result := objIndex;
-//     comcreate
-//  end;
-
-
   if TRegEx.IsMatch(SQL, '^\s*CREATE\s+OR\s+ALTER\s+TRIGGER', [roIgnoreCase]) then
     Result := objTrigger
   else if TRegEx.IsMatch(SQL, '^\s*CREATE\s+OR\s+ALTER\s+PROCEDURE', [roIgnoreCase]) then
@@ -161,15 +149,8 @@ function TCommandSplitter.RemoveComments(const SQL: string): string;
 var
   Regex: TRegEx;
 begin
-  // Remove comentários de bloco (/* ... */) incluindo multilinhas
   Regex := TRegEx.Create('/\*[\s\S]*?\*/', [roIgnoreCase]);
   Result := Regex.Replace(SQL, '');
-
-  // Remove comentários de linha (-- ...), preservando as quebras de linha
- // Regex := TRegEx.Create('--.*$', [roIgnoreCase, roMultiline]);
- // Result := Regex.Replace(Result, '');
-
-  // Não substitua quebras de linha por espaços, preserve o texto original
   Result := Result.Trim;
 end;
 
@@ -192,8 +173,14 @@ var
     for C in Commands do
     begin
       TrimmedCmd := C.Trim;
+
+      if (TrimmedCmd <> '') and (TrimmedCmd.EndsWith(Delimiter,true) = false) then
+          TrimmedCmd := TrimmedCmd+Delimiter;
+
+
       if TrimmedCmd <> '' then
         Statements.Add(TrimmedCmd);
+
     end;
   end;
 
