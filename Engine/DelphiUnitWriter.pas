@@ -78,6 +78,7 @@ var
   vProc : TMethod;
   line : string;
   arq: TextFile;
+  Writer: TStreamWriter;
 begin
   if (FileExists(Path+'\'+UnitName+'.pas')) then
      DeleteFile(Path+'\'+UnitName+'.pas');
@@ -155,16 +156,19 @@ begin
 
      ForceDirectories(Path);
 
-     AssignFile(arq, Path+'\'+UnitName+'.pas');
-     Rewrite(arq);
 
-    for i := 0 to Sl.Count - 1 do begin
-       Writeln(arq, SL[i]);
+    Writer := TStreamWriter.Create(Path + '\' + UnitName + '.pas', False, TEncoding.ANSI);
+    try
+
+      for i := 0 to SL.Count - 1 do
+      begin
+        Writer.WriteLine(SL[i]);
+      end;
+    finally
+      Writer.Free;
     end;
-    CloseFile(arq);
 
 
-   // SL.SaveToFile(Path+'\'+UnitName+'.pas', TEncoding.ANSI);
   finally
     SL.Free;
   end;

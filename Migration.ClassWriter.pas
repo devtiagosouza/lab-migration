@@ -2,7 +2,8 @@ unit Migration.ClassWriter;
 
 interface
 
-uses DelphiUnitWriter,System.RegularExpressions, Model.DBObject, DCollections,System.Rtti, System.Generics.Collections, System.SysUtils;
+uses DelphiUnitWriter,System.RegularExpressions, Model.DBObject, DCollections,System.Rtti,
+    System.TypInfo, System.Classes, System.Generics.Collections, System.SysUtils;
 
 Type TMigrationClassWriter = class(TDelphiUnitWriter)
 
@@ -58,9 +59,16 @@ var
  className : string;
  objectTypeName : string;
  Regex : TRegEx;
+ Context: TRttiContext;
+ RttiType: TRttiType;
+ TypeName: string;
 begin
+    Context := TRttiContext.Create;
+    RttiType := Context.GetType(TypeInfo(T));
 
-    UsesDeclaration := 'System.SysUtils, System.Classes, Model.DBTable, Migration';
+    TypeName := RttiType.Name;
+
+    UsesDeclaration := 'System.SysUtils, System.Classes, Model.'+TypeName.Replace('T','')+', Migration';
     ConstructorBody := '';
     MainClass := 'TMigration';
 

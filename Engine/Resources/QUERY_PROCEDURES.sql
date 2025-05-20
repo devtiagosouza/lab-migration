@@ -1,0 +1,1 @@
+select p.rdb$procedure_name as name, p.rdb$procedure_source as source from rdb$procedures p where p.rdb$system_flag = 0

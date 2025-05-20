@@ -50,7 +50,6 @@ private
     procedure LoadFunctions;
     procedure LoadTriggers;
     procedure LoadGenerators;
-   // procedure LoadIndices;
 
 public
     property Tables : TList<TDBTable> read FTables write FTables;
@@ -128,11 +127,6 @@ begin
 end;
 
 function TDBSystemTables.GetFieldList(aViewName: string): TStringList;
- const sql = 'SELECT '+sLineBreak+
-'  R.rdb$field_name as field_name '+sLineBreak+
-' FROM RDB$RELATION_FIELDS R  '+sLineBreak+
-'WHERE R.rdb$relation_name = :VIEW_NAME '+sLineBreak+
-'order by r.rdb$field_position';
 VAR
 query : TFDQuery;
 begin
@@ -142,7 +136,9 @@ begin
       query := TFDQuery.Create(nil);
       query.Connection := FConnection;
 
-      query.Open(sql,[aViewName]);
+      query.SQL.Text := SqlResources.TSqlResources.Read('QUERY_FIELD_LIST_SQL');
+      query.Params.ParamByName('VIEW_NAME').AsString := aViewName;
+      query.Open;
 
       while not query.Eof do
       begin
@@ -264,19 +260,14 @@ begin
 end;
 
 function TDBSystemTables.GetPrimaryKeys(aTableName: string): TList<TDBPrimaryKey>;
-const sql = 'SELECT RC.rdb$constraint_name AS NAME, SG.rdb$index_name AS INDEX_NAME, MAX(iif(coalesce(i.rdb$index_type,0) = 1,''DESCENDING'',''ASCENDING'' )) AS SORTING,  LIST(TRIM(sg.RDB$FIELD_NAME)) AS FIELDS  '+sLineBreak+
-      ' FROM RDB$RELATION_CONSTRAINTS rc                                        '+sLineBreak+
-      ' JOIN RDB$INDEX_SEGMENTS sg ON rc.RDB$INDEX_NAME = sg.RDB$INDEX_NAME     '+sLineBreak+
-      ' join rdb$indices i on sg.RDB$INDEX_NAME = i.rdb$index_name              '+sLineBreak+
-      ' WHERE rc.RDB$RELATION_NAME = :TABLE_NAME                                '+sLineBreak+
-      ' AND rc.RDB$CONSTRAINT_TYPE = ''PRIMARY KEY''                            '+sLineBreak+
-      ' GROUP BY RC.rdb$constraint_name, SG.rdb$index_name                      ';
 var
  vIndex : TDBPrimaryKey;
 begin
   Result := TList<TDBPrimaryKey>.Create();
-  FQueryPK.Open(sql);
+  FQueryPK.SQL.Text := SqlResources.TSqlResources.Read('QUERY_PRIMARY_KEYS_SQL');
   FQueryPK.Params.ParamByName('TABLE_NAME').AsString := aTableName;
+  FQueryPK.Open();
+
   while not FQueryPK.Eof do begin
     vIndex := TDBPrimaryKey.Create;
     vIndex.Name := FQueryPK.FieldByName('NAME').AsString;
@@ -410,13 +401,9 @@ procedure TDBSystemTables.Load;
 begin
    LoadGenerators;
    LoadTriggers;
-   //LoadTablesAndViews('trim(t.rdb$relation_name) = '+QuotedStr('ABASTECIMENTO'));
    LoadTablesAndViews();
-//   LoadProcedures;
-   //LoadFunctions;
-
-
- //  LoadIndices;
+   LoadProcedures;
+   LoadFunctions;
 
 end;
 
@@ -444,8 +431,7 @@ begin
 end;
 
 procedure TDBSystemTables.LoadFunctions;
-const sql : string = 'select trim(p.rdb$function_name) as name, p.rdb$function_source as source from rdb$functions p where p.rdb$system_flag = 0'
- +' and TRIM(p.rdb$function_name) = ''FUNC_TESTE'' ';
+const sql : string = 'select trim(p.rdb$function_name) as name, p.rdb$function_source as source from rdb$functions p where p.rdb$system_flag = 0';
 var
  vFunction : TDBFunction;
   InputFields : TList<TDBField>;
@@ -473,15 +459,15 @@ end;
 
 
 procedure TDBSystemTables.LoadProcedures;
-const sql : string = 'select p.rdb$procedure_name as name, p.rdb$procedure_source as source from rdb$procedures p where p.rdb$system_flag = 0'
- +' and TRIM(p.rdb$procedure_name) = ''SP_LMC''';
 var
  vProcedure : TDBProcedure;
  InputFields : TList<TDBField>;
  outputFields : TList<TDBField>;
+
 begin
   Procedures := TList<TDBProcedure>.create;
-  FQueryFunctions.Open(sql);
+  FQueryFunctions.SQL.Text := SqlResources.TSqlResources.Read('QUERY_PROCEDURES_SQL');
+  FQueryFunctions.Open();
   while not FQueryFunctions.Eof do
   begin
     vProcedure := TDBProcedure.Create;

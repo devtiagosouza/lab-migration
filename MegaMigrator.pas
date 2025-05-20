@@ -2,15 +2,17 @@ unit MegaMigrator;
 
 interface
 
- uses System.classes,FireDAC.Comp.Client,Model.DBView, Model.DBFunction,  System.SysUtils, DBSystemTables, ClipBrd,
- Model.DBTable,System.IOUtils,Migration.ClassWriter, Model.DBObject, DCollections;
+ uses System.classes,FireDAC.Comp.Client,Model.DBView,  System.SysUtils, DBSystemTables, ClipBrd,
+ Model.DBTable,Model.DBTrigger, Model.DBProcedure, Model.DBGenerator, Model.DBFunction,System.IOUtils,Migration.ClassWriter, Model.DBObject, DCollections;
+
+ const CLASS_PATH = 'C:\Fontes\Labs\lab-migration\_migrations';
 
  type TMegaMigration = class
 
  private
    Connection : TFDConnection;
    SystemTables : TDBSystemTables;
-   Writer : TMigrationClassWriter;
+
  public
     procedure Migrate;
     function GenerateScript : string;
@@ -28,13 +30,13 @@ constructor TMegaMigration.Create(AOwner: TComponent; AConnection : TFDConnectio
 begin
    Connection  := AConnection;
    SystemTables := TDBSystemTables.Create(AConnection);
-   Writer := TMigrationClassWriter.Create('C:\Fontes\Labs\lab-migration\_migrations');;
+
 
 end;
 
 function TMegaMigration.GenerateScript: string;
 var
- str : string;
+  str : string;
   Stream : TFileStream;
 
 begin
@@ -81,8 +83,23 @@ begin
 end;
 
 procedure TMegaMigration.SaveClasses;
+var
+   Writer : TMigrationClassWriter;
 begin
+  Writer := TMigrationClassWriter.Create(CLASS_PATH);
   Writer.SavePas<TDBTable>( SystemTables.Tables );
+
+  Writer := TMigrationClassWriter.Create(CLASS_PATH);
+  Writer.SavePas<TDBView>( SystemTables.Views );
+
+   Writer := TMigrationClassWriter.Create(CLASS_PATH);
+  Writer.SavePas<TDBProcedure>( SystemTables.Procedures );
+
+   Writer := TMigrationClassWriter.Create(CLASS_PATH);
+  Writer.SavePas<TDBFunction>( SystemTables.Functions );
+
+   Writer := TMigrationClassWriter.Create(CLASS_PATH);
+  Writer.SavePas<TDBGenerator>( SystemTables.Generators );
 end;
 
 end.

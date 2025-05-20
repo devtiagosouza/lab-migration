@@ -27,13 +27,12 @@ implementation
 
 procedure TMigration.AddScript(const AScript: string);
 begin
- ScriptList.Add(AScript);
+  ScriptList.Add(AScript);
 end;
 
 constructor TMigration.Create();
 begin
    ScriptList := TStringList.Create;
-
 end;
 
 destructor TMigration.Destroy;
