@@ -52,7 +52,6 @@ begin
    DDLPatterns.Add(comCreateConstraintUnique,'^\s*ALTER\s+TABLE\s+(\w+)\s+ADD\s+CONSTRAINT\s+(\w+)\s+UNIQUE\s*\(\s*("?[\w\s]+"?(?:\s*,\s*"?[\w\s]+"?)*)\s*\)(?:\s+USING\s+DESCENDING\s+INDEX\s+(\w+))?\s*;?\s*$');
    DDLPatterns.Add(comCreateConstraintCheck,'^\s*ALTER\s+TABLE\s+(\w+)\s+ADD\s+CONSTRAINT\s+(\w+)\s+CHECK\s*\((.*)\)\s*;?\s*$');
    DDLPatterns.Add(comCreateConstraintFK,'(?im)^\s*ALTER\s+TABLE\s+(\w+)\s+ADD\s+CONSTRAINT\s+(\w+)\s+FOREIGN\s+KEY\s*\(\s*([^)]+?)\s*\)\s+REFERENCES\s+(\w+)\s*\(\s*([^)]+?)\s*\)\s*(ON\s+DELETE\s+\w+(?:\s+ON\s+UPDATE\s+\w+)?)?\s*(USING\s+DESCENDING\s+INDEX\s+\w+)?\s*;?\s*$');
-   //DDLPatterns.Add(comCreateConstraintFK,'^\s*ALTER\s+TABLE\s+(\w+)\s+ADD\s+CONSTRAINT\s+(\w+)\s+FOREIGN\s+KEY\s*\(\s*([^)]+?)\s*\)\s+REFERENCES\s+(\w+)\s*\(\s*([^)]+?)\s*\)(?:\s+ON\s+DELETE\s+(\w+))?(?:\s+ON\s+UPDATE\s+(\w+))?(?:\s+USING\s+DESCENDING\s+INDEX\s+(\w+))?\s*;?\s*$');
 
    DDLPatterns.Add(comCreateIndexOnFields,'^\s*CREATE\s+(UNIQUE DESCENDING|UNIQUE|DESCENDING)?\s*INDEX\s+(\w+)\s+ON\s+(\w+)\s*\(\s*([^)]+?)\s*\)');
    DDLPatterns.Add(comCreateIndexComputed,'^\s*CREATE\s+(UNIQUE DESCENDING|UNIQUE|DESCENDING)?\s*INDEX\s+(\w+)\s+ON\s+(\w+)\s+COMPUTED\s+BY\s*\((.*)\)\s*$');

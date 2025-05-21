@@ -561,11 +561,7 @@ begin
     vTrigger.TriggerPosition := FQueryTrigger.FieldByName('TRIGGER_POSITION').AsInteger;
     vTrigger.IsActive := FQueryTrigger.FieldByName('IS_ACTIVE').AsString = 'S';
 
-    vTrigger.Generators := Generators.Where(function(g : TDBGenerator) : boolean
-    begin
-       result := g.TriggerName = vTrigger.Name;
-    end);
-
+ 
 
     Triggers.Add(vTrigger);
 

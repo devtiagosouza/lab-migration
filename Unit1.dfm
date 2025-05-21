@@ -13,11 +13,12 @@ object Form1: TForm1
   OldCreateOrder = False
   Position = poMainFormCenter
   WindowState = wsMaximized
+  OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
   object Memo1: TMemo
     Left = 0
-    Top = 41
+    Top = 65
     Width = 789
     Height = 264
     Align = alTop
@@ -31,31 +32,31 @@ object Form1: TForm1
     ParentFont = False
     ScrollBars = ssBoth
     TabOrder = 0
+    ExplicitTop = 41
   end
   object Panel1: TPanel
     Left = 0
     Top = 0
     Width = 789
-    Height = 41
+    Height = 65
     Align = alTop
     Caption = 'Panel1'
+    ShowCaption = False
     TabOrder = 1
-    object Button3: TButton
-      Left = 336
-      Top = 10
-      Width = 75
-      Height = 25
-      Caption = 'Button3'
-      TabOrder = 0
-      OnClick = Button3Click
+    object lbTempo: TLabel
+      Left = 24
+      Top = 40
+      Width = 40
+      Height = 13
+      Caption = 'lbTempo'
     end
     object Button1: TButton
       Left = 40
-      Top = 10
+      Top = 9
       Width = 75
       Height = 25
-      Caption = 'Button1'
-      TabOrder = 1
+      Caption = 'Gerar Script'
+      TabOrder = 0
       OnClick = Button1Click
     end
     object Button2: TButton
@@ -64,33 +65,51 @@ object Form1: TForm1
       Width = 75
       Height = 25
       Caption = 'Split'
-      TabOrder = 2
+      TabOrder = 1
       OnClick = Button2Click
     end
     object Button4: TButton
       Left = 520
-      Top = 10
+      Top = 9
       Width = 75
       Height = 25
       Caption = 'Testando'
-      TabOrder = 3
+      TabOrder = 2
       OnClick = Button4Click
     end
     object Button5: TButton
       Left = 705
-      Top = 10
+      Top = 9
       Width = 75
       Height = 25
       Caption = 'Button5'
-      TabOrder = 4
+      TabOrder = 3
       OnClick = Button5Click
+    end
+    object Button3: TButton
+      Left = 144
+      Top = 9
+      Width = 89
+      Height = 25
+      Caption = 'Gerar Classes'
+      TabOrder = 4
+      OnClick = Button3Click
+    end
+    object Button6: TButton
+      Left = 312
+      Top = 9
+      Width = 75
+      Height = 25
+      Caption = 'Button6'
+      TabOrder = 5
+      OnClick = Button6Click
     end
   end
   object Memo2: TMemo
     Left = 0
-    Top = 305
+    Top = 329
     Width = 789
-    Height = 235
+    Height = 211
     Align = alClient
     Font.Charset = ANSI_CHARSET
     Font.Color = clWindowText
@@ -102,6 +121,8 @@ object Form1: TForm1
     ParentFont = False
     ScrollBars = ssBoth
     TabOrder = 2
+    ExplicitTop = 305
+    ExplicitHeight = 235
   end
   object FDConnection1: TFDConnection
     Params.Strings = (

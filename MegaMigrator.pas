@@ -43,10 +43,10 @@ begin
   SystemTables.Load;
 
 
-//  str :=  SystemTables.Tables.First(function(table : TDBTable) : boolean
-//  begin
-//     result :=  table.Name = 'ABASTECIMENTO';
-//  end).DDLCreate;
+  str :=  SystemTables.Tables.First(function(table : TDBTable) : boolean
+  begin
+     result :=  table.Name = 'NFCE';
+  end).DDLCreate;
 
 //  str :=  SystemTables.Views.First(function(table : TDBView) : boolean
 //  begin
@@ -58,10 +58,13 @@ begin
 //     result := TRUE;// table.Name = 'TESTANDO';
 //  end).DDLCreate;
 
-  // TFile.WriteAllText('C:\SQL\SQL.sql', str, TEncoding.Default);
 
 
- // result := str;
+   TFile.WriteAllText('C:\SQL\SQL.sql', str, TEncoding.Default);
+
+
+
+  result := str;
 
 end;
 

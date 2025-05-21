@@ -32,6 +32,18 @@ interface
 
  end;
 
+
+ TDBFieldBuilder = class
+ private
+    FModel : TDBField;
+    FTableName : string;
+ public
+    function New(aFieldName: string; aFieldType : string) : TDBFieldBuilder;
+    function AsField : TDBField;
+
+    constructor Create(aTableName : string);
+ end;
+
 implementation
 
   uses Sql.Builder;
@@ -86,6 +98,28 @@ begin
    else vName := GetFormatedName;
 
    Result:= Trim(vName+' '+FieldType+GetFieldSet);
+end;
+
+{ TDBFieldBuilder }
+
+function TDBFieldBuilder.AsField: TDBField;
+begin
+  Result := FModel;
+end;
+
+constructor TDBFieldBuilder.Create(aTableName : string);
+begin
+  FTableName := aTableName;
+end;
+
+function TDBFieldBuilder.New(aFieldName,
+  aFieldType: string): TDBFieldBuilder;
+begin
+    FModel := TDBField.Create;
+    FModel.TableName := FTableName;
+    FModel.Name := aFieldName;
+    FModel.FieldType := aFieldType;
+    Result := Self;
 end;
 
 end.

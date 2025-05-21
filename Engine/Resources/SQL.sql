@@ -1,62 +1,39 @@
-SET TERM ^ ;
-
-
-
-/******************************************************************************/
-/****                         Triggers for tables                          ****/
-/******************************************************************************/
-
-
-
-/* Trigger: ABASTECIMENTO_BI */
-CREATE OR ALTER TRIGGER ABASTECIMENTO_BI FOR ABASTECIMENTO
+CREATE OR ALTER TRIGGER NFCE_BI FOR NFCE
 ACTIVE BEFORE INSERT POSITION 0
 AS
- BEGIN
-   IF (NEW.ID_AB IS NULL) THEN
-     NEW.ID_AB = GEN_ID(GEN_ABASTECIMENTO_ID,1);
- END
-^
+ DECLARE VARIABLE ambiente INTEGER; /* VERSAO:1.0 */
+BEGIN
+  IF (NEW.id_nfce IS NULL) THEN
+    NEW.id_nfce = GEN_ID(gen_nfce_id,1);
 
-/* Trigger: ABASTECIMENTO_ESTOQUE_TANQUES */
-CREATE OR ALTER TRIGGER ABASTECIMENTO_ESTOQUE_TANQUES FOR ABASTECIMENTO
-ACTIVE AFTER INSERT OR UPDATE OR DELETE POSITION 0
-AS
-     --Depois
-      declare variable est_atual numeric(15,3);
-      declare variable id_tanque integer;
-    begin
-      id_tanque = 0;
-      select  t.id_tanque from tanques t where COALESCE(t.tq_ativo,'S') <> 'N'
-      AND  t.tq_tanque = new.tanque into :id_tanque;
+    SELECT c.tipo_ambiente FROM configuracao_nfce c INTO : ambiente;
 
-      select  coalesce(tq_estoque_escritural,0) from tanques t where t.id_tanque = :id_tanque into :est_atual;
+    IF (GEN_ID(gen_serie_nfce_producao,0) = 0) THEN
+      EXECUTE STATEMENT 'set generator gen_serie_nfce_producao to 1';
 
+    IF (GEN_ID(gen_serie_nfce_homologacao,0) = 0) THEN
+      EXECUTE STATEMENT 'set generator gen_serie_nfce_homologacao to 1';
 
-      IF (INSERTING) THEN BEGIN  --DEPOIS DE INSERIR
-
-            UPDATE ABASTECIMENTO AB SET AB.estoque_inicial = :est_atual WHERE AB.id_ab = NEW.id_ab;
-
-            update tanques t set t.tq_estoque_escritural = t.tq_estoque_escritural - new.litro where t.id_tanque = :id_tanque;
-
-      END
-      ELSE if (UPDATING)  then BEGIN
-            IF ((old.status = 'PENDENTE') AND (NEW.status = 'AFERICAO')) then begin  --SE ESTIVER MUDANDO O STATUS DE PENDENTE PARA AFERICAO DEVOLVE O ESTOQUE
-               update tanques t set t.tq_estoque_escritural = t.tq_estoque_escritural + old.litro WHERE t.id_tanque = :id_tanque;
-            END
-
-            IF (OLD.litro <> NEW.litro) then BEGIN --EST? ATUALIZANDO A QUANTIDADE. ? O CASO DE PROBLEMA DE CASAS DECIMAIS NO CONCENTRADOR QUE ? PRECISO
-               --VOLTAR O CORRETO
-
-               --VOLTA O ESTOQUE ANTIGO
-                update tanques t set t.tq_estoque_escritural = t.tq_estoque_escritural + old.litro WHERE T.id_tanque = :id_tanque;
-                --BAIXA A QUANTIDADE NOVA
-                update tanques t set t.tq_estoque_escritural = t.tq_estoque_escritural - new.litro WHERE T.id_tanque = :id_tanque;
-            END
-      END
-      ELSE if (DELETING) then BEGIN  --DEVOLVE O ESTOQUE
-          if (old.status <> 'AFERICAO') then
-               update tanques t set t.tq_estoque_escritural = t.tq_estoque_escritural + old.litro WHERE  T.id_tanque = :id_tanque;
-      END
+    IF (ambiente = 1) THEN BEGIN /*PRODU??O*/
+       NEW.numero = GEN_ID(gen_numero_nfce_producao,1);
+       IF (NEW.numero > 999999999) THEN BEGIN
+          NEW.numero = 1;
+          EXECUTE STATEMENT 'set generator gen_numero_nfce_producao to 1'; /*retorna para 1*/
+          NEW.serie = GEN_ID(gen_serie_nfce_producao,1);   /*incrementa mais um na s?rie*/
+       END
+       ELSE NEW.serie = GEN_ID(gen_serie_nfce_producao,0);
     END
+    ELSE BEGIN    /*HOMOLOGA??O*/
+       NEW.numero = GEN_ID(gen_numero_nfce_homologacao,1);
+       IF (NEW.numero > 999999999) THEN BEGIN
+          NEW.numero = 1;
+          EXECUTE STATEMENT 'set generator gen_numero_nfce_homologacao to 1'; /*retorna para 1*/
+          NEW.serie = GEN_ID(gen_serie_nfce_homologacao,1);   /*incrementa mais um na s?rie*/
+       END
+       ELSE NEW.serie = GEN_ID(gen_serie_nfce_homologacao,0);
+    END
+
+
+END
 ^
+SET TERM ; ^

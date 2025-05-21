@@ -2,15 +2,17 @@ unit Migration;
 
 interface
 
-uses  System.Classes,System.SysUtils, System.StrUtils;
+uses  System.Classes,System.SysUtils, Model.DBObject, System.StrUtils;
 
-type TMigration = class
+type TMigration<T : TDBObject> = class
 
 protected
     procedure AddScript(const AScript : string);
-
+    
 private
     ScriptList : TStringList;
+    FBuilder : IBuilder<T>;
+    
     function GetScript: string;
 
 public
@@ -25,23 +27,24 @@ implementation
 
 { TMigration }
 
-procedure TMigration.AddScript(const AScript: string);
+procedure TMigration<T>.AddScript(const AScript: string);
 begin
   ScriptList.Add(AScript);
 end;
 
-constructor TMigration.Create();
+constructor TMigration<T>.Create();
 begin
    ScriptList := TStringList.Create;
+   FBuilder := TBuilder<T>.Create;
 end;
 
-destructor TMigration.Destroy;
+destructor TMigration<T>.Destroy;
 begin
   if Assigned(ScriptList) then
       ScriptList.Free;
 end;
 
-function TMigration.GetScript: string;
+function TMigration<T>.GetScript: string;
 begin
   result := string.join(sLineBreak+sLineBreak+sLineBreak,ScriptList.ToStringArray);
 end;

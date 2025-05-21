@@ -37,6 +37,17 @@ interface
 
   end;
 
+  TDBTableBuilder = class
+
+  private
+     FModel : TDBTable;
+  public
+    Fields : TDBFieldBuilder;
+
+    function New(aTableName : string; aFields : TDBFieldBuilder) : TDBTableBuilder;
+    function AsDBTable : TDBTable;
+  end;
+
 
 implementation
 
@@ -206,12 +217,30 @@ begin
 
   for Item in AList do
   begin
-    LengthNome := Length(PropertyGetter(Item));  // Calculando o comprimento da propriedade Nome
+    LengthNome := Length(PropertyGetter(Item));
     if LengthNome > MaxLength then
       MaxLength := LengthNome;
   end;
 
   Result := MaxLength;
+end;
+
+{ TDBTableBuilder }
+
+function TDBTableBuilder.AsDBTable: TDBTable;
+begin
+ 
+  Result := FModel;
+
+
+end;
+
+function TDBTableBuilder.New(aTableName: string;
+  aFields: TDBFieldBuilder): TDBTableBuilder;
+begin
+  Fields := TDBFieldBuilder.Create(aTableName);
+  FModel := TDBTable.Create;
+  result := Self;
 end;
 
 end.

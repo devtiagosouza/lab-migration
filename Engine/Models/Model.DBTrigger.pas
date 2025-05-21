@@ -46,17 +46,18 @@ interface
     function TriggerTypeToString(Value: TTriggerType): string;
     function ExtrairGenerators(): TArray<string>;
     function GetIsForGenerator: boolean;
+    procedure SetTriggerSource(const Value: string);
 
 
   public
 
       property TableName : string read FTableName write FTableName;
-      property TriggerSource : string read FTriggerSource write FTriggerSource;
+      property TriggerSource : string read FTriggerSource write SetTriggerSource;
       property TriggerType : TTriggerType read FTriggerType write FTriggerType;
       property TriggerPosition : integer read FTriggerPosition write FTriggerPosition;
       property IsForGenerator : boolean read GetIsForGenerator;
       property IsActive : boolean read FIsActive write FIsActive;
-      property Generators : TList<TDBGenerator> read FGenerators write FGenerators;
+      property Generators : TList<TDBGenerator> read FGenerators;
 
       function DDLCreate: string; override;
 
@@ -126,6 +127,44 @@ var
 begin
    gens := ExtrairGenerators;
    result := (gens <> nil) and (Length(gens) > 0);
+end;
+
+procedure TDBTrigger.SetTriggerSource(const Value: string);
+var
+  Match: TMatch;
+  Regex: TRegEx;
+  Generators: TDictionary<string, Boolean>;
+  gen : string;
+  generator : TDBGenerator;
+begin
+  FTriggerSource := Value;
+  FGenerators := TList<TDBGenerator>.Create;
+
+
+  Generators := TDictionary<string, Boolean>.Create;
+  try
+    Regex := TRegEx.Create('GEN_ID\((\w+),\d+\)');
+
+    for Match in Regex.Matches(FTriggerSource) do
+    begin
+      Generators.AddOrSetValue(Match.Groups[1].Value, True);
+    end;
+
+
+
+    for gen in Generators.Keys do begin
+       generator := TDBGenerator.Create();
+       generator.Name := gen;
+       generator.TriggerName := self.Name;
+
+        FGenerators.Add(generator);
+    end;
+
+  finally
+    Generators.Free;
+  end;
+
+
 end;
 
 procedure TDBTrigger.SetTriggerTypeFromString(Value: string);

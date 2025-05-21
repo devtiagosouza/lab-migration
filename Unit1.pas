@@ -8,28 +8,33 @@ uses
   FireDAC.Stan.Error, FireDAC.UI.Intf, FireDAC.Phys.Intf, FireDAC.Stan.Def,
   FireDAC.Stan.Pool, FireDAC.Stan.Async, FireDAC.Phys, FireDAC.Phys.FB,
    FireDAC.Phys.FBDef, FireDAC.VCLUI.Wait,FireDAC.DApt,Model.DBField,Model.DBProcedure,
-  Data.DB, FireDAC.Comp.Client,MegaMigrator, ClipBrd,Model.DBTable,Model.DBView,
+  Data.DB, FireDAC.Comp.Client,MegaMigrator, ClipBrd,Model.DBTable,Model.DBView,System.RegularExpressions,
   Vcl.StdCtrls, Sql.Builder,Sql.Script.Builder,DCollections,TypInfo, Vcl.ExtCtrls,Splitters,
-  Parser.Tables, Parser.Triggers,DelphiUnitWriter, Model.DBTrigger, Parser.Procedures, Parser.Functions, Model.DBFunction, Parser.Constraints, Parser.Indices, Model.DBObject,Parser.Views, Firebird.Types;
+  Parser.Tables, Parser.Triggers,DelphiUnitWriter,TaskTimer, Model.DBTrigger,System.Generics.Collections, Parser.Procedures, Parser.Functions, Model.DBFunction, Parser.Constraints, Parser.Indices, Model.DBObject,Parser.Views, Firebird.Types;
 
 type
   TForm1 = class(TForm)
     FDConnection1: TFDConnection;
     Memo1: TMemo;
     Panel1: TPanel;
-    Button3: TButton;
     Button1: TButton;
     Memo2: TMemo;
     Button2: TButton;
     Button4: TButton;
     Button5: TButton;
+    lbTempo: TLabel;
+    Button3: TButton;
+    Button6: TButton;
     procedure Button1Click(Sender: TObject);
-    procedure Button3Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
     procedure Button5Click(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure Button3Click(Sender: TObject);
+    procedure Button6Click(Sender: TObject);
   private
     MegaMigrator : TMegaMigration;
+
     { Private declarations }
   public
     { Public declarations }
@@ -45,12 +50,19 @@ implementation
 uses SqlResources;
 
 procedure TForm1.Button1Click(Sender: TObject);
+var tempo: string;
 begin
-  FDConnection1.Open();
-  MegaMigrator := TMegaMigration.Create(self, FDConnection1);
-  Memo1.Lines.Text := MegaMigrator.GenerateScript;
-  MegaMigrator.SaveClasses;
-  ShowMessage('Concluido');
+ TTaskTimer.Execute(procedure()
+ begin
+    FDConnection1.Open();
+    MegaMigrator := TMegaMigration.Create(self, FDConnection1);
+    Memo1.Lines.Text := MegaMigrator.GenerateScript;
+    ShowMessage('Concluido');
+ end,tempo);
+
+ lbTempo.Caption := 'Tempo: '+tempo;
+
+
 end;
 
 procedure TForm1.Button2Click(Sender: TObject);
@@ -93,49 +105,18 @@ begin
 end;
 
 procedure TForm1.Button3Click(Sender: TObject);
-var
- splitter : TCommandSplitter;
- comandos : TList<TDDLCommand>;
- comando : TDDLCommand;
- sql : string;
- objectType: string;
- commandType: string;
-
- Tabela : TDBTable;
- obj : TDBObject;
+var tempo: string;
 begin
-  splitter := TCommandSplitter.Create;
-  sql :=  SqlResources.TSqlResources.Read('SQL_sql');
-  comandos :=  splitter.Split(sql);
+ TTaskTimer.Execute(procedure()
+ begin
+    FDConnection1.Open();
+    MegaMigrator := TMegaMigration.Create(self, FDConnection1);
+    Memo1.Lines.Text := MegaMigrator.GenerateScript;
+    MegaMigrator.SaveClasses;
+    ShowMessage('Concluido');
+ end,tempo);
 
-  comando := comandos.First(function(c : TDDLCommand) : boolean
-  begin
-     result := c.ObjectType = objPrimaryKey
-  end);
-
-
-  Memo1.Clear;
-
-  Memo1.Lines.Text := sql;
-
-  obj := TConstraintParser.Parse(comando.CommandText);
-
-  Memo2.Clear;
-  Memo2.Lines.Text := obj.DDLCreate;
-
-//  for comando in  comandos do begin
-//    objectType := GetEnumName(TypeInfo(TDBObjectType),
-//    integer(comando.ObjectType));
-//
-//    commandType :=  GetEnumName(TypeInfo(TDDLCommandType),
-//    integer(comando.CommandType));
-//
-//     Memo1.Lines.Add('Name: '+comando.ObjectName+' | Command Type: '+commandType+' | Object Type: '+objectType
-//     //+' | Text: '+comando.CommandText
-//     );
-//
-//  end;
-
+ lbTempo.Caption := 'Tempo: '+tempo;
 end;
 
 procedure TForm1.Button4Click(Sender: TObject);
@@ -198,6 +179,39 @@ begin
   finally
     Writer.Free;
   end;
+end;
+
+
+
+procedure TForm1.Button6Click(Sender: TObject);
+ var
+ sql : string;
+   Match: TMatch;
+   a : string;
+  Regex: TRegEx;
+  Generators: TDictionary<string, Boolean>;  // Usando um dicionário para filtrar duplicados
+begin
+ Generators := TDictionary<string, Boolean>.Create;
+   sql :=  SqlResources.TSqlResources.Read('SQL_sql');
+    Regex := TRegEx.Create('GEN_ID\((\w+),\d+\)');
+
+    Memo1.Clear;
+    for Match in Regex.Matches(sql) do
+    begin
+      Generators.AddOrSetValue(Match.Groups[1].Value, True);  // Adiciona o nome do generator ao dicionário
+    end;
+
+      for a in Generators.Keys do
+          Memo1.Lines.Add(a);  // Exibe o nome do generator sem repetições
+
+//     for Match in Regex.Matches(sql) do
+//        Memo1.Lines.Add(Match.Groups[1].Value);  // Exibe o nome do generator encontrado
+
+end;
+
+procedure TForm1.FormCreate(Sender: TObject);
+begin
+ lbTempo.Caption := '';
 end;
 
 end.

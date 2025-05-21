@@ -142,9 +142,9 @@ begin
       SL.Add(ifthen(vProc.MethodType = mehodProcedure,'procedure','function')+ ' ' +FClassName+'.'+vProc.Declaration+';');
       SL.Add('begin');
 
-      for line in vProc.Code.split([sLineBreak]) do begin
-          SL.Add('  '+line);
-      end;
+//      for line in vProc.Code.split([sLineBreak]) do begin
+//          SL.Add('  '+line);
+//      end;
 
       SL.Add('end;');
       SL.Add('');

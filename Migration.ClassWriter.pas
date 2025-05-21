@@ -68,7 +68,9 @@ begin
 
     TypeName := RttiType.Name;
 
-    UsesDeclaration := 'System.SysUtils, System.Classes, Model.'+TypeName.Replace('T','')+', Migration';
+
+
+    UsesDeclaration := 'System.SysUtils, System.Classes, Model.'+Copy(TypeName,2)+', Migration';
     ConstructorBody := '';
     MainClass := 'TMigration';
 
