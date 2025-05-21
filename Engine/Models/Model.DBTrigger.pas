@@ -45,19 +45,17 @@ interface
 
     function TriggerTypeToString(Value: TTriggerType): string;
     function ExtrairGenerators(): TArray<string>;
-    function GetIsForGenerator: boolean;
     procedure SetTriggerSource(const Value: string);
 
 
   public
 
       property TableName : string read FTableName write FTableName;
-      property TriggerSource : string read FTriggerSource write SetTriggerSource;
+      property TriggerSource : string read FTriggerSource write FTriggerSource;
       property TriggerType : TTriggerType read FTriggerType write FTriggerType;
       property TriggerPosition : integer read FTriggerPosition write FTriggerPosition;
-      property IsForGenerator : boolean read GetIsForGenerator;
       property IsActive : boolean read FIsActive write FIsActive;
-      property Generators : TList<TDBGenerator> read FGenerators;
+
 
       function DDLCreate: string; override;
 
@@ -121,13 +119,7 @@ begin
   end;
 end;
 
-function TDBTrigger.GetIsForGenerator: boolean;
-var
-  gens : TArray<string>;
-begin
-   gens := ExtrairGenerators;
-   result := (gens <> nil) and (Length(gens) > 0);
-end;
+
 
 procedure TDBTrigger.SetTriggerSource(const Value: string);
 var
@@ -155,7 +147,6 @@ begin
     for gen in Generators.Keys do begin
        generator := TDBGenerator.Create();
        generator.Name := gen;
-       generator.TriggerName := self.Name;
 
         FGenerators.Add(generator);
     end;

@@ -7,20 +7,12 @@ interface
   type TDBGenerator = class(TDBObject)
 
   private
-    FIncrement: Int64;
-    FInitialValue: Int64;
     FTriggerName: string;
 
   public
-
-      property InitialValue : Int64 read FInitialValue write FInitialValue;
-      property Increment : Int64 read FIncrement write FIncrement;
-      property TriggerName : string read FTriggerName write FTriggerName;
-
       function DDLCreate: string; override;
 
       constructor Create();
-
   end;
 
 
@@ -32,7 +24,6 @@ constructor TDBGenerator.Create();
 begin
   inherited Create;
   ObjectTypeFriendlyName := 'Generator';
-
 end;
 
 function TDBGenerator.DDLCreate: string;

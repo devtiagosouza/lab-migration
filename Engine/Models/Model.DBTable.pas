@@ -1,7 +1,7 @@
 unit Model.DBTable;
 
 interface
-  uses Model.DBObject, Model.DBField, Model.DBIndex, Model.DBGenerator, Model.DBTrigger, DCollections,
+  uses Model.DBObject,System.Regularexpressions, System.Generics.Collections, Model.DBField, Model.DBIndex, Model.DBGenerator, Model.DBTrigger, DCollections,
   System.Classes, System.StrUtils, System.SysUtils, Sql.Script.Builder, Sql.Builder;
 
   type TDBTable = class(TDBObject)
@@ -17,6 +17,7 @@ interface
 
 
     function GetMaxDigitCount<T: class>(const AList: TList<T>; PropertyGetter: TFunc<T, string>): Integer;
+    function GetGenerators: TList<TDBGenerator>;
 
   public
       property Fields : TList<TDBField> read FFields write FFields;
@@ -27,27 +28,18 @@ interface
       property Indices : TList<TDBIndex> read FIndices write FIndices;
       property Triggers : TList<TDBTrigger> read FTriggers write FTriggers;
 
+
+      property Generators : TList<TDBGenerator> read GetGenerators;
+
+
       function DDLCreate: string; override;
 
 
       constructor Create();
 
-
-
-
   end;
 
-  TDBTableBuilder = class
-
-  private
-     FModel : TDBTable;
-  public
-    Fields : TDBFieldBuilder;
-
-    function New(aTableName : string; aFields : TDBFieldBuilder) : TDBTableBuilder;
-    function AsDBTable : TDBTable;
-  end;
-
+ 
 
 implementation
 
@@ -87,12 +79,9 @@ begin
 
 
 
-  for I := 0 to Triggers.Count - 1 do begin
-        for x := 0 to Triggers[i].Generators.Count - 1 do begin
-           vGenerator := Triggers[i].Generators[x];
-
-           Script.AppendLine(vGenerator.DDLCreate);
-        end;
+  for I := 0 to Generators.Count - 1 do begin
+     vGenerator := Generators[i];
+     Script.AppendLine(vGenerator.DDLCreate);
   end;
 
 
@@ -207,6 +196,43 @@ begin
     result := Script.AsString;
 end;
 
+function TDBTable.GetGenerators: TList<TDBGenerator>;
+var
+  Match: TMatch;
+  Regex: TRegEx;
+  DicGenerators: TDictionary<string, Boolean>;
+  gen : string;
+  generator : TDBGenerator;
+
+
+  trigger : TDBTrigger;
+  triggerBody : string;
+
+begin
+ Result := TList<TDBGenerator>.Create;
+ DicGenerators := TDictionary<string, Boolean>.Create;
+
+ for trigger in Triggers do begin
+    Regex := TRegEx.Create('GEN_ID\((\w+),\d+\)');
+
+    for Match in Regex.Matches(trigger.TriggerSource) do
+    begin
+      DicGenerators.AddOrSetValue(Match.Groups[1].Value, True);
+    end;
+
+ end;
+
+
+    for gen in DicGenerators.Keys do begin
+        generator := TDBGenerator.Create();
+        generator.Name := gen;
+
+        Result.Add(generator);
+    end;
+
+
+end;
+
 function TDBTable.GetMaxDigitCount<T>(const AList: TList<T>;
   PropertyGetter: TFunc<T, string>): Integer;
 var
@@ -244,3 +270,4 @@ begin
 end;
 
 end.
+

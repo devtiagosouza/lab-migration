@@ -420,9 +420,6 @@ begin
   begin
     vGenerator := TDBGenerator.Create;
     vGenerator.Name := FQueryGenerator.FieldByName('name').AsString;
-    vGenerator.InitialValue := FQueryGenerator.FieldByName('initial_value').Value;
-    vGenerator.Increment :=  FQueryGenerator.FieldByName('increment').Value;
-    vGenerator.TriggerName := FQueryGenerator.FieldByName('TRIGGER_NAME').AsString;
 
     Generators.Add(vGenerator);
 

@@ -36,8 +36,7 @@ uses
   Parser.Triggers in 'Engine\Parsers\Parser.Triggers.pas',
   DelphiUnitWriter in 'Engine\DelphiUnitWriter.pas',
   Migration.ClassWriter in 'Migration.ClassWriter.pas',
-  TaskTimer in 'TaskTimer.pas',
-  Migration.Tabelas in '_migrations\Migration.Tabelas.pas';
+  TaskTimer in 'TaskTimer.pas';
 
 {$R *.res}
 
