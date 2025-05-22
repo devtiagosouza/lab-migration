@@ -134,6 +134,7 @@
         <DCCReference Include="TaskTimer.pas">
             <Form>$R *.res</Form>
         </DCCReference>
+        <DCCReference Include="DatabaseMigrator\DBMigrator.pas"/>
         <RcItem Include="Engine\Resources\QUERY_TABLES_AND_VIEWS.sql">
             <ContainerId>ResourceItem</ContainerId>
             <ResourceType>RCDATA</ResourceType>
