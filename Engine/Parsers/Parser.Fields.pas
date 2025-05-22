@@ -3,7 +3,7 @@ unit Parser.Fields;
 interface
 
 uses
-  System.SysUtils, System.RegularExpressions, DCollections,Model.DBTable, Model.DBField,Firebird.Types;
+  System.SysUtils, System.RegularExpressions, DCollections,Model.DBField,Firebird.Types;
 
 type
   TFieldParser = class

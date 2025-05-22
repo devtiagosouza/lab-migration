@@ -12,7 +12,7 @@ private
 
 public
    class function Read(const aResourceName: string): string; static;
-
+   class function SaveFile(ResourceName : string; Path : string; FileName : string): Boolean;
 end;
 
 
@@ -38,6 +38,29 @@ begin
   finally
     Stream.Free;
   end;
+end;
+
+class function TSqlResources.SaveFile(ResourceName : string; Path: string; FileName : string): Boolean;
+var
+ Fs : TFileStream;
+ pathSalvar : string;
+ res : TResourceStream;
+begin
+ pathSalvar := Path+'\'+FileName;
+ if (FileExists(pathSalvar)) then begin
+     DeleteFile(Pchar(pathSalvar));
+ end
+ else begin
+     ForceDirectories(pathSalvar);
+ end;
+
+ fs :=  TFileStream.Create(pathSalvar,fmCreate);
+
+ res := TResourceStream.Create(HInstance,ResourceName,RT_RCDATA);
+ res.SaveToStream(fs);
+ fs.Free;
+
+ result := FileExists(pathSalvar);
 end;
 
 end.

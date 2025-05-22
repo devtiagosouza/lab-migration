@@ -2,7 +2,7 @@ unit Sql.Script.Builder;
 
 interface
 
- uses FirebirdKeywords,System.Classes, System.SysUtils, Sql.Builder;
+ uses System.Classes, System.SysUtils;
 
 
 

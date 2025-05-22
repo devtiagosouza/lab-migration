@@ -2,7 +2,7 @@ unit Migration;
 
 interface
 
-uses  System.Classes,System.SysUtils, Model.DBObject, System.StrUtils;
+uses  System.Classes,System.SysUtils, Model.DBObject;
 
 type TMigration<T : TDBObject> = class
 

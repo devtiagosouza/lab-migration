@@ -3,7 +3,7 @@ unit MegaMigrator;
 interface
 
  uses System.classes,FireDAC.Comp.Client,Model.DBView,  System.SysUtils, DBSystemTables, ClipBrd,
- Model.DBTable,Model.DBTrigger, Model.DBProcedure, Model.DBGenerator, Model.DBFunction,System.IOUtils,Migration.ClassWriter, Model.DBObject, DCollections;
+ Model.DBTable,Model.DBProcedure, Model.DBGenerator, Model.DBFunction,System.IOUtils,Migration.ClassWriter, Model.DBObject, DCollections;
 
  const CLASS_PATH = 'C:\Fontes\Labs\lab-migration\_migrations';
 

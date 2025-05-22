@@ -3,7 +3,7 @@ unit DCollections;
 interface
 
  uses
-  System.Generics.Collections, System.SysUtils, System.Rtti, Generics.Defaults;
+  System.Generics.Collections, System.SysUtils, System.Rtti,System.Generics.Defaults;
 
 
   type

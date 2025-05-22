@@ -3,7 +3,7 @@ unit Parser.Indices;
 interface
 
 uses
-  System.SysUtils, System.RegularExpressions,System.StrUtils, System.Generics.Collections,
+  System.SysUtils, System.RegularExpressions,System.StrUtils,
   Model.DBIndex;
 
 type

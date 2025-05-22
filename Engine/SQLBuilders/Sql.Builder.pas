@@ -4,7 +4,7 @@ interface
 
 
 uses
-  FirebirdKeywords, System.Classes,  System.SysUtils, Sql.Builder.SqlTemplate;
+  System.Classes,  System.SysUtils, Sql.Builder.SqlTemplate;
 
 
  type

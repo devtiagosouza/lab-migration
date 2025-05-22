@@ -1,7 +1,7 @@
 unit Model.DBField;
 
 interface
-  uses Model.DBObject, system.SysUtils, system.strUtils;
+  uses Model.DBObject, system.SysUtils;
 
  type TDBField = class(TDBObject)
 

@@ -2,7 +2,7 @@ unit Model.DBTable;
 
 interface
   uses Model.DBObject,System.Regularexpressions, System.Generics.Collections, Model.DBField, Model.DBIndex, Model.DBGenerator, Model.DBTrigger, DCollections,
-  System.Classes, System.StrUtils, System.SysUtils, Sql.Script.Builder, Sql.Builder;
+  System.Classes, System.SysUtils, Sql.Script.Builder, Sql.Builder;
 
   type TDBTable = class(TDBObject)
 
@@ -251,23 +251,7 @@ begin
   Result := MaxLength;
 end;
 
-{ TDBTableBuilder }
 
-function TDBTableBuilder.AsDBTable: TDBTable;
-begin
- 
-  Result := FModel;
-
-
-end;
-
-function TDBTableBuilder.New(aTableName: string;
-  aFields: TDBFieldBuilder): TDBTableBuilder;
-begin
-  Fields := TDBFieldBuilder.Create(aTableName);
-  FModel := TDBTable.Create;
-  result := Self;
-end;
 
 end.
 

@@ -3,7 +3,7 @@ unit Parser.Triggers;
 interface
 
 uses
-  System.SysUtils, System.RegularExpressions,System.StrUtils, DCollections,
+  System.SysUtils, System.RegularExpressions,
   Model.DBTrigger, Firebird.Types;
 
 type

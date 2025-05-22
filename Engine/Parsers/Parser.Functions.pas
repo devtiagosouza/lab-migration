@@ -3,7 +3,7 @@ unit Parser.Functions;
 interface
 
 uses
-  System.SysUtils, System.RegularExpressions,System.StrUtils, DCollections,
+  System.SysUtils, System.RegularExpressions,DCollections,
   Model.DBFunction, Model.DBField, Parser.Fields, Firebird.Types;
 
 type

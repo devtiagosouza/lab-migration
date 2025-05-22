@@ -2,8 +2,8 @@ unit Migration.ClassWriter;
 
 interface
 
-uses DelphiUnitWriter,System.RegularExpressions, Model.DBObject, DCollections,System.Rtti,
-    System.TypInfo, System.Classes, System.Generics.Collections, System.SysUtils;
+uses DelphiUnitWriter,System.RegularExpressions, Model.DBObject, System.Rtti,
+    System.Classes, System.Generics.Collections, System.SysUtils;
 
 Type TMigrationClassWriter = class(TDelphiUnitWriter)
 

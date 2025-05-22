@@ -3,7 +3,7 @@ unit Parser.Views;
 interface
 
 uses
-  System.SysUtils, System.RegularExpressions,System.StrUtils, DCollections,
+  System.SysUtils, System.RegularExpressions,
   Model.DBView, Firebird.Types;
 
 type

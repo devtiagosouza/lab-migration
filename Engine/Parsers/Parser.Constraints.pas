@@ -3,7 +3,7 @@ unit Parser.Constraints;
 interface
 
 uses
-  System.SysUtils, System.RegularExpressions, System.Generics.Collections,
+  System.SysUtils, System.RegularExpressions,
   Model.DBIndex, Model.DBObject;
 
 type

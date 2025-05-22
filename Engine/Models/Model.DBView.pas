@@ -2,7 +2,7 @@ unit Model.DBView;
 
 interface
 
-uses Model.DBObject, System.StrUtils, System.Classes, Sql.Builder;
+uses Model.DBObject, System.Classes, Sql.Builder;
 
 type TDBView = class(TDBObject)
 

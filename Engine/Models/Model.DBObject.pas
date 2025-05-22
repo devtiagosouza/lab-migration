@@ -2,7 +2,7 @@ unit Model.DBObject;
 
 interface
 
-uses System.SysUtils,FirebirdKeywords, Sql.Builder.SqlTemplate;
+uses System.SysUtils,FirebirdKeywords;
 
    type TDBObject = class
 

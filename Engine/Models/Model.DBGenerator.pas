@@ -2,7 +2,7 @@ unit Model.DBGenerator;
 
 interface
 
-  uses Model.DBObject, System.Classes, System.SysUtils, System.StrUtils,TypInfo;
+  uses Model.DBObject, System.Classes, System.SysUtils;
 
   type TDBGenerator = class(TDBObject)
 

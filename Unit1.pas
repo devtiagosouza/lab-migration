@@ -5,12 +5,13 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, FireDAC.Stan.Intf, FireDAC.Stan.Option,
-  FireDAC.Stan.Error, FireDAC.UI.Intf, FireDAC.Phys.Intf, FireDAC.Stan.Def,
+  FireDAC.Stan.Error, FireDAC.UI.Intf, FireDAC.Stan.Def,
   FireDAC.Stan.Pool, FireDAC.Stan.Async, FireDAC.Phys, FireDAC.Phys.FB,
-   FireDAC.Phys.FBDef, FireDAC.VCLUI.Wait,FireDAC.DApt,Model.DBField,Model.DBProcedure,
-  Data.DB, FireDAC.Comp.Client,MegaMigrator, ClipBrd,Model.DBTable,Model.DBView,System.RegularExpressions,
-  Vcl.StdCtrls, Sql.Builder,Sql.Script.Builder,DCollections,TypInfo, Vcl.ExtCtrls,Splitters,
-  Parser.Tables, Parser.Triggers,DelphiUnitWriter,TaskTimer, Model.DBTrigger,System.Generics.Collections, Parser.Procedures, Parser.Functions, Model.DBFunction, Parser.Constraints, Parser.Indices, Model.DBObject,Parser.Views, Firebird.Types;
+   FireDAC.VCLUI.Wait,FireDAC.DApt,Model.DBProcedure,
+  Data.DB, FireDAC.Comp.Client,MegaMigrator, ClipBrd,Model.DBView,System.RegularExpressions,
+  Vcl.StdCtrls, DCollections,TypInfo, Vcl.ExtCtrls,Splitters,
+  Parser.Triggers,DelphiUnitWriter,TaskTimer, Model.DBTrigger,System.Generics.Collections, Parser.Procedures, Parser.Functions, Model.DBFunction, Parser.Views, Firebird.Types,
+  FireDAC.Phys.Intf, FireDAC.Phys.FBDef;
 
 type
   TForm1 = class(TForm)

@@ -3,7 +3,7 @@ unit Splitters;
 interface
 
 uses
-  System.SysUtils, System.Classes, Firebird.Types, DCollections,  System.RegularExpressions, System.StrUtils, ClipBrd;
+  System.SysUtils, System.Classes, Firebird.Types, DCollections,  System.RegularExpressions, ClipBrd;
 
 type
   TDDLCommandType = (ddlUnknown, ddlCreate, ddlAlter, ddlDrop);
