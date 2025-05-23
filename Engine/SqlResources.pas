@@ -51,7 +51,7 @@ begin
      DeleteFile(Pchar(pathSalvar));
  end
  else begin
-     ForceDirectories(pathSalvar);
+     ForceDirectories(Path);
  end;
 
  fs :=  TFileStream.Create(pathSalvar,fmCreate);

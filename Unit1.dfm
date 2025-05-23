@@ -42,66 +42,22 @@ object Form1: TForm1
     Caption = 'Panel1'
     ShowCaption = False
     TabOrder = 1
+    ExplicitTop = -6
     object lbTempo: TLabel
-      Left = 24
+      Left = 8
       Top = 40
       Width = 40
       Height = 13
       Caption = 'lbTempo'
     end
     object Button1: TButton
-      Left = 40
+      Left = 0
       Top = 9
       Width = 75
       Height = 25
-      Caption = 'Gerar Script'
+      Caption = 'Executar'
       TabOrder = 0
       OnClick = Button1Click
-    end
-    object Button2: TButton
-      Left = 624
-      Top = 10
-      Width = 75
-      Height = 25
-      Caption = 'Split'
-      TabOrder = 1
-      OnClick = Button2Click
-    end
-    object Button4: TButton
-      Left = 520
-      Top = 9
-      Width = 75
-      Height = 25
-      Caption = 'Testando'
-      TabOrder = 2
-      OnClick = Button4Click
-    end
-    object Button5: TButton
-      Left = 705
-      Top = 9
-      Width = 75
-      Height = 25
-      Caption = 'Button5'
-      TabOrder = 3
-      OnClick = Button5Click
-    end
-    object Button3: TButton
-      Left = 144
-      Top = 9
-      Width = 89
-      Height = 25
-      Caption = 'Gerar Classes'
-      TabOrder = 4
-      OnClick = Button3Click
-    end
-    object Button6: TButton
-      Left = 312
-      Top = 9
-      Width = 75
-      Height = 25
-      Caption = 'Button6'
-      TabOrder = 5
-      OnClick = Button6Click
     end
   end
   object Memo2: TMemo
