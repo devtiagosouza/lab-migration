@@ -8,7 +8,7 @@ type TDBView = class(TDBObject)
 
 private
   FViewSource: string;
-    FFieldList: TStringList;
+  FFieldList: TStringList;
 
 public
 
@@ -16,6 +16,7 @@ public
    property FieldList : TStringList read FFieldList write FFieldList;
 
    function DDLCreate: string; override;
+   function EqualityScript(Obj: TDBObject) : string; override;
 
    constructor Create();
 end;
@@ -43,6 +44,16 @@ begin
                 .AsString(';');
 
 
+end;
+
+function TDBView.EqualityScript(Obj: TDBObject): string;
+begin
+ result := '';
+ if (isSameObject(Obj)) then begin
+   if (not isSameText(DDLCreate, obj.DDLCreate)) then begin
+      result := DDLCreate;
+   end;
+ end;
 end;
 
 End.

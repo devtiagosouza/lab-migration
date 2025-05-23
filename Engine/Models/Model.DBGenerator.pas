@@ -12,6 +12,8 @@ interface
   public
       function DDLCreate: string; override;
 
+       function EqualityScript(Obj: TDBObject) : string; override;
+
       constructor Create();
   end;
 
@@ -29,6 +31,11 @@ end;
 function TDBGenerator.DDLCreate: string;
 begin
   result := 'CREATE GENERATOR '+GetFormatedName+';';
+end;
+
+function TDBGenerator.EqualityScript(Obj: TDBObject): string;
+begin
+  result := '';
 end;
 
 end.

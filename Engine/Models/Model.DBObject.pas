@@ -4,7 +4,17 @@ interface
 
 uses System.SysUtils,FirebirdKeywords;
 
-   type TDBObject = class
+
+
+type
+
+
+  TDBObject = class
+
+   protected
+    function IsSameObject(Obj: TDBObject) : boolean;
+    function IsSameText(const text1,text2 : string) : boolean;
+
 
    private
     FName: string;
@@ -18,25 +28,13 @@ uses System.SysUtils,FirebirdKeywords;
 
        function GetFormatedName: string;
        function DDLCreate : string; virtual;
+       function DDLDrop : string; virtual;
 
-
+       function EqualityScript(Obj: TDBObject) : string; virtual;
    end;
 
 
-   type IBuilder<T : TDBObject> = interface
-   ['{64A369F8-9A59-48A8-BD86-FD38CB4DE4B0}']
-   function New(const AName : string) : IBuilder<T>;
 
-   end;
-
-   type TBuilder<T : TDBObject> = class(TInterfacedObject, IBuilder<T>)
-
-   private
-       FModel : T;
-   public 
-      function New(const AName : string) : IBuilder<T>;  
-      function AsDBObject : T;
-   end;
 
 implementation
 
@@ -49,6 +47,17 @@ function TDBObject.DDLCreate: string;
 begin
   raise Exception.Create('Implemente o método CreateCommand');
 end;
+
+function TDBObject.DDLDrop: string;
+begin
+  result := '';
+end;
+
+function TDBObject.EqualityScript(Obj: TDBObject): string;
+begin
+  raise Exception.Create('Implemente o método EqualityScript');
+end;
+
 
 function TDBObject.GetFormatedName: string;
 begin
@@ -67,18 +76,36 @@ begin
 
 end;
 
-{ Builder<T> }
 
-function TBuilder<T>.AsDBObject: T;
+
+function TDBObject.IsSameObject(Obj: TDBObject): boolean;
 begin
-  Result := FModel;
+  if Pointer(Self) = Pointer(Obj) then
+    Exit(True);
+
+  if Obj = nil then
+    Exit(False);
+
+  if Obj.ClassType <> Self.ClassType then
+    Exit(False);
+
+   Result := (Self.Name = Obj.Name);
 end;
 
-function TBuilder<T>.New(const AName: string): IBuilder<T>;
+function TDBObject.IsSameText(const text1,text2 : string): boolean;
+ var
+  CleanStr1, CleanStr2: string;
 begin
-  FModel := TDBObject.Create() as T;
-  FModel.Name := AName; 
-  Result := Self;
+
+  CleanStr1 := StringReplace(text1, ' ', '', [rfReplaceAll]);
+  CleanStr1 := StringReplace(CleanStr1, #13#10, '', [rfReplaceAll]);
+  CleanStr1 := StringReplace(CleanStr1, #10, '', [rfReplaceAll]);
+
+  CleanStr2 := StringReplace(text2, ' ', '', [rfReplaceAll]);
+  CleanStr2 := StringReplace(CleanStr2, #13#10, '', [rfReplaceAll]);
+  CleanStr2 := StringReplace(CleanStr2, #10, '', [rfReplaceAll]);
+
+  Result := CleanStr1.ToLower = CleanStr2.ToLower;
 end;
 
 end.

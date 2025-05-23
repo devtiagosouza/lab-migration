@@ -10,14 +10,17 @@ interface
     FFunctionSource: string;
     FReturnType: string;
 
-    FInputFields: TList<TDBField>;
 
+
+    FInputFields: TList<TDBField>;
   public
       property FunctionSource : string read FFunctionSource write FFunctionSource;
       property ReturnType : string read FReturnType write FReturnType;
       property InputFields : TList<TDBField> read FInputFields write FInputFields;
 
       function DDLCreate: string; override;
+
+      function EqualityScript(Obj: TDBObject) : string; override;
 
       constructor Create();
   end;
@@ -67,6 +70,18 @@ begin
 
 
   result := sql.AsString('^');
+end;
+
+function TDBFunction.EqualityScript(Obj: TDBObject): string;
+begin
+ result := '';
+ if (isSameObject(Obj)) then begin
+     if (not isSameText(DDLCreate, obj.DDLCreate)) then begin
+         result := DDLCreate;
+     end;
+ end;
+
+
 end;
 
 End.

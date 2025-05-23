@@ -5,6 +5,8 @@ interface
 
  type TDBField = class(TDBObject)
 
+
+
  private
     FFieldType: string;
     FDefaultValue: string;
@@ -12,6 +14,8 @@ interface
     FCharset: string;
     FCollate: string;
     FTableName: string;
+
+
 
  public
 
@@ -26,7 +30,10 @@ interface
 
     function DDLCreate: string; override;
 
-   function GetFullFieldSet(spacing : integer = 0) : string;
+    function EqualityScript(Obj: TDBObject) : string; override;
+
+
+    function GetFullFieldSet(spacing : integer = 0) : string;
 
    constructor Create();
 
@@ -60,6 +67,30 @@ begin
    .asString(';')
 end;
 
+
+
+function TDBField.EqualityScript(Obj: TDBObject): string;
+var
+  Outro: TDBField;
+begin
+ result := '';
+ if (isSameObject(Obj)) then begin
+     Outro := TDBField(Obj);
+
+     if (FTableName = outro.TableName) then begin
+
+        if (FFieldType <> Outro.FFieldType) or
+               (FDefaultValue <> Outro.FDefaultValue) or
+               (FNotNull <> Outro.FNotNull) or
+               (FCharset <> Outro.FCharset) or
+               (FCollate <> Outro.FCollate) then
+             result :=  DDLCreate;
+     end;
+ end;
+
+
+end;
+
 function TDBField.GetFieldSet: string;
 begin
   if (string.isnullorempty(DefaultValue) = false) then
@@ -90,6 +121,7 @@ begin
 
    Result:= Trim(vName+' '+FieldType+GetFieldSet);
 end;
+
 
 
 

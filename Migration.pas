@@ -11,8 +11,7 @@ protected
     
 private
     ScriptList : TStringList;
-    FBuilder : IBuilder<T>;
-    
+
     function GetScript: string;
 
 public
@@ -35,7 +34,6 @@ end;
 constructor TMigration<T>.Create();
 begin
    ScriptList := TStringList.Create;
-   FBuilder := TBuilder<T>.Create;
 end;
 
 destructor TMigration<T>.Destroy;

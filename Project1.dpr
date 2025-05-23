@@ -15,8 +15,6 @@ uses
   Model.DBTrigger in 'Engine\Models\Model.DBTrigger.pas',
   Model.DBGenerator in 'Engine\Models\Model.DBGenerator.pas',
   Model.DBView in 'Engine\Models\Model.DBView.pas',
-  Database in 'DatabaseMigrator\Database.pas',
-  MegaMigrator in 'DatabaseMigrator\MegaMigrator.pas',
   SqlResources in 'Engine\SqlResources.pas',
   FirebirdKeywords in 'Engine\FirebirdKeywords.pas',
   Sql.Builder in 'Engine\SQLBuilders\Sql.Builder.pas',
@@ -36,8 +34,10 @@ uses
   Parser.Triggers in 'Engine\Parsers\Parser.Triggers.pas',
   DelphiUnitWriter in 'Engine\DelphiUnitWriter.pas',
   Migration.ClassWriter in 'Migration.ClassWriter.pas',
-  TaskTimer in 'TaskTimer.pas',
-  DatabaseInterfaces in 'DatabaseMigrator\DatabaseInterfaces.pas';
+  TaskTimer in 'TaskTimer.pas' {$R *.res},
+  MegaMigrator in 'DatabaseMigrator\MegaMigrator.pas',
+  Database.Interfaces in 'DatabaseMigrator\Database.Interfaces.pas',
+  Database in 'DatabaseMigrator\Database.pas';
 
 {$R *.res}
 

@@ -19,6 +19,8 @@ interface
 
      function DDLCreate: string; override;
 
+     function EqualityScript(Obj: TDBObject) : string; override;
+
      constructor Create();
   end;
 
@@ -85,6 +87,16 @@ begin
 
 
   result := sql.AsString('^');
+end;
+
+function TDBProcedure.EqualityScript(Obj: TDBObject): string;
+begin
+ result := '';
+ if (isSameObject(Obj)) then begin
+     if (not isSameText(DDLCreate, Obj.DDLCreate)) then begin
+        result := DDLCreate;
+     end;
+ end;
 end;
 
 End.

@@ -33,6 +33,7 @@ interface
 
 
       function DDLCreate: string; override;
+      function EqualityScript(Obj: TDBObject) : string; override;
 
 
       constructor Create();
@@ -194,6 +195,38 @@ begin
 
 
     result := Script.AsString;
+end;
+
+function TDBTable.EqualityScript(Obj: TDBObject): string;
+var
+  outro : TDBTable;
+
+  vGen,vOtherGen : TDBGenerator;
+  vField, vOtherField : TDBField;
+  script : TStringList;
+  sql : string;
+begin
+   script := TStringList.Create;
+
+   outro := TDBTable(Obj);
+   for vGen in GetGenerators do begin
+
+       vOtherGen := outro.Generators.First(function(g : TDBGenerator) : boolean begin
+          result := g.Name = vGen.Name;
+       end);
+
+       if (vOtherGen <> nil) then begin  //achou
+           sql := vGen.EqualityScript(vOtherGen);
+           if (sql <> '') then
+              script.Add(sql);
+       end
+       else begin
+          script.Add(vOtherGen.DDLCreate);
+       end;
+   end;
+
+   Result := script.ToString;
+
 end;
 
 function TDBTable.GetGenerators: TList<TDBGenerator>;

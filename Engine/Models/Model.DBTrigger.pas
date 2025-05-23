@@ -58,6 +58,7 @@ interface
 
 
       function DDLCreate: string; override;
+      function EqualityScript(Obj: TDBObject) : string; override;
 
 
       procedure SetTriggerTypeFromString(Value: string);
@@ -98,6 +99,16 @@ begin
         freeandNil(command);
   end;
 
+end;
+
+function TDBTrigger.EqualityScript(Obj: TDBObject): string;
+begin
+ result := '';
+ if (isSameObject(Obj)) then begin
+   if (not isSameText(DDLCreate, obj.DDLCreate)) then begin
+      result := DDLCreate;
+   end;
+ end;
 end;
 
 function TDBTrigger.ExtrairGenerators(): TArray<string>;
