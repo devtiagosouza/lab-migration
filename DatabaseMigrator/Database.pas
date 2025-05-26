@@ -3,7 +3,7 @@ unit Database;
 interface
   uses Model.DBObject, Model.DBTable, Model.DBField, Model.DBView, Model.DBProcedure, Model.DBFunction, Model.DBTrigger,
   Model.DBGenerator,Model.DBIndex, System.Classes,FireDAC.Comp.Client,SqlResources,
-  System.SysUtils, DCollections, Database.Interfaces,FireDAC.Stan.Option;
+  System.SysUtils, DCollections, Database.Interfaces,FireDAC.Stan.Option,DebugFilter;
 
 
 type TDatabase = class(TInterfacedObject, IDatabase)
@@ -27,6 +27,7 @@ private
     FProcedures: TList<TDBProcedure>;
     FFunctions: TList<TDBFunction>;
     FTriggers: TList<TDBTrigger>;
+    FGeneratorsWithoutDeps: TList<TDBGenerator>;
     FGenerators: TList<TDBGenerator>;
     FIndices: TList<TDBIndex>;
 
@@ -49,7 +50,7 @@ private
     procedure LoadProcedures;
     procedure LoadFunctions;
     procedure LoadTriggers;
-    procedure LoadGenerators;
+    procedure LoadGeneratorsWithoutDependencies;
 
     function CreateQuery : TFDQuery;
 
@@ -340,7 +341,7 @@ end;
 
 function TDatabase.GetGenerators: TList<TDBGenerator>;
 begin
-   result := FGenerators;
+   result := FGeneratorsWithoutDeps;
 end;
 
 procedure TDatabase.GetProcedureFields(aProcedureName: string;
@@ -387,17 +388,17 @@ end;
 
 function TDatabase.GetProcedures: TList<TDBProcedure>;
 begin
-
+  result := FProcedures;
 end;
 
 function TDatabase.GetTables: TList<TDBTable>;
 begin
-
+   Result := FTables;
 end;
 
 function TDatabase.GetTriggers: TList<TDBTrigger>;
 begin
-
+  Result := FTriggers;
 end;
 
 function TDatabase.GetUniqueConstraints(
@@ -429,7 +430,7 @@ end;
 
 function TDatabase.GetViews: TList<TDBView>;
 begin
-
+  Result := FViews;
 end;
 
 procedure TDatabase.LoadMetadata;
@@ -437,11 +438,11 @@ begin
 try
    try
        FConnection.Connected := true;
-       LoadGenerators;
        LoadTriggers;
        LoadTablesAndViews();
        LoadProcedures;
        LoadFunctions;
+       LoadGeneratorsWithoutDependencies;
    except
        raise;
    end;
@@ -454,22 +455,26 @@ end;
 
 
 
-procedure TDatabase.LoadGenerators;
+procedure TDatabase.LoadGeneratorsWithoutDependencies;
 var
  vGenerator : TDBGenerator;
 begin
-  FGenerators := TList<TDBGenerator>.create;
-  FQueryGenerator.SQL.Text := TSqlResources.Read('QUERY_GENERATORS_SQL');
+  FGeneratorsWithoutDeps := TList<TDBGenerator>.create;
+  FQueryGenerator.SQL.Text := TSqlResources.Read('QUERY_GENERATORS_WITHOUT_DEPS_SQL');
   FQueryGenerator.Open;
   while not FQueryGenerator.Eof do
   begin
-    vGenerator := TDBGenerator.Create;
-    vGenerator.Name := FQueryGenerator.FieldByName('name').AsString;
+    if (TDebugFilter.Listar(FQueryGenerator.FieldByName('generator_name').AsString)) then begin
+        vGenerator := TDBGenerator.Create;
+        vGenerator.Name := FQueryGenerator.FieldByName('generator_name').AsString;
 
-    FGenerators.Add(vGenerator);
+        FGeneratorsWithoutDeps.Add(vGenerator);
+    end;
 
     FQueryGenerator.Next;
   end;
+
+
 end;
 
 procedure TDatabase.LoadFunctions;
@@ -483,14 +488,17 @@ begin
   FQueryFunctions.Open(sql);
   while not FQueryFunctions.Eof do
   begin
-    vFunction := TDBFunction.Create;
-    vFunction.Name := FQueryFunctions.FieldByName('name').AsString;
-    vFunction.FunctionSource := FQueryFunctions.FieldByName('source').AsString;
-    GetFunctionFields(vFunction.Name, InputFields, vReturnType );
-    vFunction.InputFields := InputFields;
-    vFunction.ReturnType := vReturnType;
+    if (TDebugFilter.Listar(FQueryFunctions.FieldByName('name').AsString)) then begin
+        vFunction := TDBFunction.Create;
+        vFunction.Name := FQueryFunctions.FieldByName('name').AsString;
+        vFunction.FunctionSource := FQueryFunctions.FieldByName('source').AsString;
+        GetFunctionFields(vFunction.Name, InputFields, vReturnType );
+        vFunction.InputFields := InputFields;
+        vFunction.ReturnType := vReturnType;
 
-    FFunctions.Add(vFunction);
+        FFunctions.Add(vFunction);
+    end;
+
 
     FQueryFunctions.Next;
   end;
@@ -512,15 +520,21 @@ begin
   FQueryFunctions.Open();
   while not FQueryFunctions.Eof do
   begin
-    vProcedure := TDBProcedure.Create;
-    vProcedure.Name := FQueryFunctions.FieldByName('name').AsString;
-    vProcedure.ProcedureSource := FQueryFunctions.FieldByName('source').AsString;
-    GetProcedureFields(vProcedure.Name, InputFields,outputFields);
+    if (TDebugFilter.Listar(FQueryFunctions.FieldByName('name').AsString)) then begin
 
-    vProcedure.InputFields := InputFields;
-    vProcedure.OutputFields := outputFields;
 
-    FProcedures.Add(vProcedure);
+      vProcedure := TDBProcedure.Create;
+      vProcedure.Name := FQueryFunctions.FieldByName('name').AsString;
+      vProcedure.ProcedureSource := FQueryFunctions.FieldByName('source').AsString;
+      GetProcedureFields(vProcedure.Name, InputFields,outputFields);
+
+      vProcedure.InputFields := InputFields;
+      vProcedure.OutputFields := outputFields;
+
+      FProcedures.Add(vProcedure);
+
+    end;
+
 
     FQueryFunctions.Next;
   end;
@@ -552,31 +566,33 @@ begin
      name :=  FQueryTables.FieldByName('NAME').AsString;
      isTable := FQueryTables.FieldByName('SOURCE').IsNull;
 
-     if (isTable) then begin
-        vTable := TDBTable.Create;
-        vTable.Name := name;
-        vTable.Fields := GetFields(name);
-        vTable.PrimaryKeys := GetPrimaryKeys(name);
-        vTable.ForeignKeys := GetForeignKeys(name);
-        vTable.CheckContrainsts := GetCheckConstraints(name);
-        vTable.UniqueConstraints := GetUniqueConstraints(name);
-        vTable.Indices := GetIndicesFromTable(name);
-        vTable.Triggers := FTriggers.Where(function(t : TDBTrigger) : boolean
-        begin
-           result := t.TableName = name;
-        end);
+     if (TDebugFilter.Listar(name)) then begin
+       if (isTable) then begin
+          vTable := TDBTable.Create;
+          vTable.Name := name;
+          vTable.Fields := GetFields(name);
+          vTable.PrimaryKeys := GetPrimaryKeys(name);
+          vTable.ForeignKeys := GetForeignKeys(name);
+          vTable.CheckContrainsts := GetCheckConstraints(name);
+          vTable.UniqueConstraints := GetUniqueConstraints(name);
+          vTable.Indices := GetIndicesFromTable(name);
+          vTable.Triggers := FTriggers.Where(function(t : TDBTrigger) : boolean
+          begin
+             result := t.TableName = name;
+          end);
 
-        FTables.Add(vTable);
+          FTables.Add(vTable);
 
-     end
-     else begin
-        vView := TDBView.Create();
-        vView.Name := name;
-        vView.FieldList := GetFieldList(name);
-        vView.ViewSource :=  FQueryTables.FieldByName('SOURCE').AsString;
+       end
+       else begin
+          vView := TDBView.Create();
+          vView.Name := name;
+          vView.FieldList := GetFieldList(name);
+          vView.ViewSource :=  FQueryTables.FieldByName('SOURCE').AsString;
 
-        FViews.Add(vView);
+          FViews.Add(vView);
 
+       end;
      end;
 
 
@@ -595,17 +611,17 @@ begin
   FQueryTrigger.Open();
   while not FQueryTrigger.Eof do
   begin
-    vTrigger := TDBTrigger.Create;
-    vTrigger.Name := FQueryTrigger.FieldByName('TRIGGER_NAME').AsString;
-    vTrigger.TableName := FQueryTrigger.FieldByName('TABLE_NAME').AsString;
-    vTrigger.TriggerSource := FQueryTrigger.FieldByName('TRIGGER_SOURCE').AsString;
-    vTrigger.TriggerType :=  TTriggerType(FQueryTrigger.FieldByName('TRIGGER_TYPE').asInteger);
-    vTrigger.TriggerPosition := FQueryTrigger.FieldByName('TRIGGER_POSITION').AsInteger;
-    vTrigger.IsActive := FQueryTrigger.FieldByName('IS_ACTIVE').AsString = 'S';
+     if (TDebugFilter.Listar(FQueryTrigger.FieldByName('TRIGGER_NAME').AsString)) then begin
+         vTrigger := TDBTrigger.Create;
+        vTrigger.Name := FQueryTrigger.FieldByName('TRIGGER_NAME').AsString;
+        vTrigger.TableName := FQueryTrigger.FieldByName('TABLE_NAME').AsString;
+        vTrigger.TriggerSource := FQueryTrigger.FieldByName('TRIGGER_SOURCE').AsString;
+        vTrigger.TriggerType :=  TTriggerType(FQueryTrigger.FieldByName('TRIGGER_TYPE').asInteger);
+        vTrigger.TriggerPosition := FQueryTrigger.FieldByName('TRIGGER_POSITION').AsInteger;
+        vTrigger.IsActive := FQueryTrigger.FieldByName('IS_ACTIVE').AsString = 'S';
 
-
-
-    FTriggers.Add(vTrigger);
+        FTriggers.Add(vTrigger);
+     end;
 
     FQueryTrigger.Next;
   end;

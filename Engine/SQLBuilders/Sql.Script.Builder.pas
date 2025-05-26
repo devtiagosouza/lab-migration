@@ -44,7 +44,9 @@ end;
 
 function TScriptBuilder.Append(aText: string): IScriptBuilder;
 begin
-   FStrings.Append(aText);
+  if (string.IsNullOrEmpty(aText) = false) then
+    FStrings.Append(aText);
+
    Result := Self;
 end;
 
@@ -52,16 +54,19 @@ end;
 
 function TScriptBuilder.AppendLine(aText : string = ''): IScriptBuilder;
 begin
-   FStrings.AppendLine;
-   if (String.IsNullOrEmpty(aText) = false) then
-       FStrings.Append(aText);
+
+   if (String.IsNullOrEmpty(aText) = false) then begin
+     FStrings.AppendLine;
+      FStrings.Append(aText);
+   end;
+
 
    Result := Self;
 end;
 
 function TScriptBuilder.AsString: string;
 begin
-    Result := FStrings.ToString;
+    Result := FStrings.ToString.TrimLeft;
 end;
 
 constructor TScriptBuilder.Create();

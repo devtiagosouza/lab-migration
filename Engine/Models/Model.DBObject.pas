@@ -27,6 +27,7 @@ type
 
 
        function GetFormatedName: string;
+
        function DDLCreate : string; virtual;
        function DDLDrop : string; virtual;
 

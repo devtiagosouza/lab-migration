@@ -37,7 +37,10 @@ uses
   TaskTimer in 'TaskTimer.pas' {$R *.res},
   MegaMigrator in 'DatabaseMigrator\MegaMigrator.pas',
   Database.Interfaces in 'DatabaseMigrator\Database.Interfaces.pas',
-  Database in 'DatabaseMigrator\Database.pas';
+  Database in 'DatabaseMigrator\Database.pas',
+  DebugFilter in 'DebugFilter.pas',
+  untFrmWaitForm in 'WaitForm\untFrmWaitForm.pas' {FrmWait},
+  WaitScreen in 'WaitForm\WaitScreen.pas';
 
 {$R *.res}
 
@@ -45,5 +48,6 @@ begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
   Application.CreateForm(TForm1, Form1);
+  Application.CreateForm(TFrmWait, FrmWait);
   Application.Run;
 end.

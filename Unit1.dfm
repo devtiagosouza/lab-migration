@@ -42,7 +42,6 @@ object Form1: TForm1
     Caption = 'Panel1'
     ShowCaption = False
     TabOrder = 1
-    ExplicitTop = -6
     object lbTempo: TLabel
       Left = 8
       Top = 40

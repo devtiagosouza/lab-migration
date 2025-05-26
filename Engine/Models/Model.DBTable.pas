@@ -1,8 +1,9 @@
 unit Model.DBTable;
 
 interface
-  uses Model.DBObject,System.Regularexpressions, System.Generics.Collections, Model.DBField, Model.DBIndex, Model.DBGenerator, Model.DBTrigger, DCollections,
-  System.Classes, System.SysUtils, Sql.Script.Builder, Sql.Builder;
+  uses Model.DBObject,System.Regularexpressions, System.Generics.Collections, Model.DBField,
+  Model.DBIndex, Model.DBGenerator, Model.DBTrigger, DCollections, System.Classes,System.SysUtils,
+  Sql.Script.Builder, Sql.Builder;
 
   type TDBTable = class(TDBObject)
 
@@ -10,10 +11,11 @@ interface
     FFields: TList<TDBField>;
     FPrimaryKeys: TList<TDBPrimaryKey>;
     FForeignKeys: TList<TDBForeignKey>;
-    FCheckContrainsts: TList<TDBCheck>;
+    FCheckContraints: TList<TDBCheck>;
     FUniqueConstraints: TList<TDBUnique>;
     FIndices: TList<TDBIndex>;
     FTriggers: TList<TDBTrigger>;
+    FGeneratorsNotExists : TList<TDBGenerator>;
 
 
     function GetMaxDigitCount<T: class>(const AList: TList<T>; PropertyGetter: TFunc<T, string>): Integer;
@@ -23,7 +25,7 @@ interface
       property Fields : TList<TDBField> read FFields write FFields;
       property PrimaryKeys : TList<TDBPrimaryKey> read FPrimaryKeys write FPrimaryKeys;
       property ForeignKeys : TList<TDBForeignKey> read FForeignKeys write FForeignKeys;
-      property CheckContrainsts : TList<TDBCheck> read FCheckContrainsts write FCheckContrainsts;
+      property CheckContrainsts : TList<TDBCheck> read FCheckContraints write FCheckContraints;
       property UniqueConstraints : TList<TDBUnique> read FUniqueConstraints write FUniqueConstraints;
       property Indices : TList<TDBIndex> read FIndices write FIndices;
       property Triggers : TList<TDBTrigger> read FTriggers write FTriggers;
@@ -35,8 +37,11 @@ interface
       function DDLCreate: string; override;
       function EqualityScript(Obj: TDBObject) : string; override;
 
+      procedure SetGeneratorsNotExists(gen : TDBGenerator);
 
       constructor Create();
+
+
 
   end;
 
@@ -51,10 +56,11 @@ begin
   FFields := TList<TDBField>.create;
   FPrimaryKeys := TList<TDBPrimaryKey>.Create;
   FForeignKeys := TList<TDBForeignKey>.Create;
-  FCheckContrainsts := TList<TDBCheck>.Create;
+  FCheckContraints := TList<TDBCheck>.Create;
   FUniqueConstraints := TList<TDBUnique>.Create;
   FIndices := TList<TDBIndex>.Create;
   FTriggers := TList<TDBTrigger>.Create;
+  FGeneratorsNotExists := TList<TDBGenerator>.Create;
   ObjectTypeFriendlyName := 'Tabela';
 end;
 
@@ -203,10 +209,15 @@ var
 
   vGen,vOtherGen : TDBGenerator;
   vField, vOtherField : TDBField;
-  script : TStringList;
+  vPK, vOtherPK  : TDBPrimaryKey;
+  vFK, vOtherFK  : TDBForeignKey;
+  vCheck, vOtherCheck  : TDBCheck;
+  vUnique, vOtherUnique : TDBUnique;
+  vIndex, vOtherIndex : TDBIndex;
+  script : IScriptBuilder;
   sql : string;
 begin
-   script := TStringList.Create;
+   script := TScriptBuilder.Create;
 
    outro := TDBTable(Obj);
    for vGen in GetGenerators do begin
@@ -215,17 +226,104 @@ begin
           result := g.Name = vGen.Name;
        end);
 
-       if (vOtherGen <> nil) then begin  //achou
+       if (vOtherGen <> nil) then begin
            sql := vGen.EqualityScript(vOtherGen);
-           if (sql <> '') then
-              script.Add(sql);
+           script.AppendLine(sql);
        end
        else begin
-          script.Add(vOtherGen.DDLCreate);
+          script.AppendLine(vGen.DDLCreate);
        end;
    end;
 
-   Result := script.ToString;
+   for vField in FFields do begin
+
+       vOtherField := outro.Fields.First(function(f : TDBField) : boolean begin
+          result := f.Name = vField.Name;
+       end);
+
+       if (vOtherField <> nil) then begin
+           sql := vField.EqualityScript(vOtherField);
+           script.AppendLine(sql);
+       end
+       else begin
+          script.AppendLine(vField.DDLCreate);
+       end;
+   end;
+
+   for vPK in FPrimaryKeys do begin
+       vOtherPK := outro.PrimaryKeys.First(function(f : TDBPrimaryKey) : boolean begin
+          result := f.Name = vPK.Name;
+       end);
+
+       if (vOtherPK <> nil) then begin
+           sql := vPK.EqualityScript(vOtherPK);
+           script.AppendLine(sql);
+       end
+       else begin
+          script.AppendLine(vPK.DDLCreate);
+       end;
+
+   end;
+
+   for vFK in FForeignKeys do begin
+       vOtherFK := outro.ForeignKeys.First(function(f : TDBForeignKey) : boolean begin
+          result := f.Name = vFK.Name;
+       end);
+
+       if (vOtherFK <> nil) then begin
+           sql := vFK.EqualityScript(vOtherFK);
+           script.AppendLine(sql);
+       end
+       else begin
+          script.AppendLine(vFK.DDLCreate);
+       end;
+
+   end;
+
+   for vCheck in FCheckContraints do begin
+       vOtherCheck := outro.CheckContrainsts.First(function(f : TDBCheck) : boolean begin
+          result := f.Name = vCheck.Name;
+       end);
+
+       if (vOtherCheck <> nil) then begin
+           sql := vCheck.EqualityScript(vOtherCheck);
+           script.AppendLine(sql);
+       end
+       else begin
+          script.AppendLine(vCheck.DDLCreate);
+       end;
+   end;
+
+   for vUnique in FUniqueConstraints do begin
+       vOtherUnique := outro.UniqueConstraints.First(function(f : TDBUnique) : boolean begin
+          result := f.Name = vUnique.Name;
+       end);
+
+       if (vOtherUnique <> nil) then begin
+           sql := vUnique.EqualityScript(vOtherUnique);
+           script.AppendLine(sql);
+       end
+       else begin
+          script.AppendLine(vUnique.DDLCreate);
+       end;
+   end;
+
+   for vIndex in FIndices do begin
+       vOtherIndex := outro.Indices.First(function(f : TDBIndex) : boolean begin
+          result := f.Name = vIndex.Name;
+       end);
+
+       if (vOtherIndex <> nil) then begin
+           sql := vIndex.EqualityScript(vOtherIndex);
+           script.AppendLine(sql);
+       end
+       else begin
+          script.AppendLine(vIndex.DDLCreate);
+       end;
+   end;
+
+
+   Result := script.AsString;
 
 end;
 
@@ -285,6 +383,11 @@ begin
 end;
 
 
+
+procedure TDBTable.SetGeneratorsNotExists(gen: TDBGenerator);
+begin
+  FGeneratorsNotExists.Add(gen);
+end;
 
 end.
 

@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, FireDAC.Stan.Intf, FireDAC.Stan.Option,
-  FireDAC.Stan.Error, FireDAC.UI.Intf, FireDAC.Stan.Def,
+  FireDAC.Stan.Error, FireDAC.UI.Intf, FireDAC.Stan.Def,WaitScreen,
   FireDAC.Stan.Pool, FireDAC.Stan.Async, FireDAC.Phys, FireDAC.Phys.FB,
    FireDAC.VCLUI.Wait,FireDAC.DApt,Model.DBProcedure,
   Data.DB, FireDAC.Comp.Client,MegaMigrator, ClipBrd,Model.DBView,System.RegularExpressions,
@@ -43,15 +43,15 @@ uses SqlResources;
 procedure TForm1.Button1Click(Sender: TObject);
 var tempo: string;
 begin
- TTaskTimer.Execute(procedure()
- begin
-    FDConnection1.Open();
-    Memo1.Lines.Text := MegaMigrator.GenerateScript;
-    ShowMessage('Concluido');
- end,tempo);
 
- lbTempo.Caption := 'Tempo: '+tempo;
+    TTaskTimer.Execute(procedure()
+     begin
 
+        Memo1.Lines.Text := MegaMigrator.GenerateScript;
+     end,tempo);
+
+     lbTempo.Caption := 'Tempo: '+tempo;
+     ShowMessage('Concluido');
 
 end;
 

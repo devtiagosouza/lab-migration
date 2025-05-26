@@ -35,7 +35,7 @@ end;
 
 function TDBGenerator.EqualityScript(Obj: TDBObject): string;
 begin
-  result := '';
+   result := '';
 end;
 
 end.
