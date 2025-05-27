@@ -58,7 +58,7 @@ interface
 
 
       function DDLCreate: string; override;
-      function EqualityScript(Obj: TDBObject) : string; override;
+      function EqualityScript(Obj: TDBObject; args : array of TObject) : string; override;
 
 
       procedure SetTriggerTypeFromString(Value: string);
@@ -101,7 +101,7 @@ begin
 
 end;
 
-function TDBTrigger.EqualityScript(Obj: TDBObject): string;
+function TDBTrigger.EqualityScript(Obj: TDBObject; args : array of TObject): string;
 begin
  result := '';
  if (isSameObject(Obj)) then begin

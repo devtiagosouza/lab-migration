@@ -16,7 +16,7 @@ public
    property FieldList : TStringList read FFieldList write FFieldList;
 
    function DDLCreate: string; override;
-   function EqualityScript(Obj: TDBObject) : string; override;
+   function EqualityScript(Obj: TDBObject; args : array of TObject) : string; override;
 
    constructor Create();
 end;
@@ -46,7 +46,7 @@ begin
 
 end;
 
-function TDBView.EqualityScript(Obj: TDBObject): string;
+function TDBView.EqualityScript(Obj: TDBObject; args : array of TObject): string;
 begin
  result := '';
  if (isSameObject(Obj)) then begin

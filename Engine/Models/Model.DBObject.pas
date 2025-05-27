@@ -30,8 +30,9 @@ type
 
        function DDLCreate : string; virtual;
        function DDLDrop : string; virtual;
+       function DDLAlter : string; virtual;
 
-       function EqualityScript(Obj: TDBObject) : string; virtual;
+       function EqualityScript(Obj: TDBObject; args : array of TObject) : string; virtual;
    end;
 
 
@@ -44,6 +45,11 @@ implementation
 
 
 
+function TDBObject.DDLAlter: string;
+begin
+  result := '';
+end;
+
 function TDBObject.DDLCreate: string;
 begin
   raise Exception.Create('Implemente o método CreateCommand');
@@ -54,7 +60,7 @@ begin
   result := '';
 end;
 
-function TDBObject.EqualityScript(Obj: TDBObject): string;
+function TDBObject.EqualityScript(Obj: TDBObject;args : array of TObject): string;
 begin
   raise Exception.Create('Implemente o método EqualityScript');
 end;

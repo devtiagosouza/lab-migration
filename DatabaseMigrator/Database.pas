@@ -51,6 +51,7 @@ private
     procedure LoadFunctions;
     procedure LoadTriggers;
     procedure LoadGeneratorsWithoutDependencies;
+    procedure LoadGenerators;
 
     function CreateQuery : TFDQuery;
 
@@ -61,6 +62,7 @@ public
     function GetFunctions: TList<TDBFunction>;
     function GetTriggers: TList<TDBTrigger>;
     function GetGenerators: TList<TDBGenerator>;
+    function GetAllGenerators: TList<TDBGenerator>;
     function GetIndices: TList<TDBIndex>;
 
     procedure LoadMetadata();
@@ -103,6 +105,11 @@ begin
       FetchOptions.RowsetSize := 500;
       FetchOptions.Mode := fmOnDemand;
    end;
+end;
+
+function TDatabase.GetAllGenerators: TList<TDBGenerator>;
+begin
+  Result := FGenerators;
 end;
 
 function TDatabase.GetCheckConstraints(
@@ -443,6 +450,7 @@ try
        LoadProcedures;
        LoadFunctions;
        LoadGeneratorsWithoutDependencies;
+       LoadGenerators;
    except
        raise;
    end;
@@ -454,6 +462,26 @@ end;
 end;
 
 
+
+procedure TDatabase.LoadGenerators;
+var
+ vGenerator : TDBGenerator;
+begin
+  FGenerators := TList<TDBGenerator>.create;
+  FQueryGenerator.SQL.Text := 'select rdb$generator_name as generator_name from rdb$generators where rdb$system_flag = 0;';
+  FQueryGenerator.Open;
+  while not FQueryGenerator.Eof do
+  begin
+    if (TDebugFilter.Listar(FQueryGenerator.FieldByName('generator_name').AsString)) then begin
+        vGenerator := TDBGenerator.Create;
+        vGenerator.Name := FQueryGenerator.FieldByName('generator_name').AsString;
+
+        FGenerators.Add(vGenerator);
+    end;
+
+    FQueryGenerator.Next;
+  end;
+end;
 
 procedure TDatabase.LoadGeneratorsWithoutDependencies;
 var

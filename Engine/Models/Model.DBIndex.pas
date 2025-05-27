@@ -22,7 +22,7 @@ public
    function DDLCreate: string; override;
    function DDLDrop: string; override;
 
-   function EqualityScript(Obj: TDBObject) : string; override;
+   function EqualityScript(Obj: TDBObject; args : array of TObject) : string; override;
 
    constructor Create();
 
@@ -54,7 +54,7 @@ public
     function DDLCreate: string; override;
     function DDLDrop: string; override;
 
-    function EqualityScript(Obj: TDBObject) : string; override;
+    function EqualityScript(Obj: TDBObject; args : array of TObject) : string; override;
 
      constructor Create();
 
@@ -74,7 +74,7 @@ public
     function DDLCreate: string; override;
     function DDLDrop: string; override;
 
-    function EqualityScript(Obj: TDBObject) : string; override;
+    function EqualityScript(Obj: TDBObject; args : array of TObject) : string; override;
 
     constructor Create();
 end;
@@ -97,7 +97,7 @@ public
     function DDLCreate: string; override;
     function DDLDrop: string; override;
 
-    function EqualityScript(Obj: TDBObject) : string; override;
+    function EqualityScript(Obj: TDBObject; args : array of TObject) : string; override;
 
     constructor Create();
 end;
@@ -132,7 +132,7 @@ public
     function DDLCreate: string; override;
     function DDLDrop: string; override;
 
-    function EqualityScript(Obj: TDBObject) : string; override;
+    function EqualityScript(Obj: TDBObject; args : array of TObject) : string; override;
 
 end;
 
@@ -169,7 +169,7 @@ begin
    Result := Format('DROP INDEX %s',[GetFormatedName()])+';';
 end;
 
-function TDBIndex.EqualityScript(Obj: TDBObject): string;
+function TDBIndex.EqualityScript(Obj: TDBObject; args : array of TObject): string;
 begin
    result := '';
    if (isSameObject(Obj)) then begin
@@ -206,7 +206,7 @@ begin
    Result := Format('ALTER TABLE %s DROP CONSTRAINT %s',[ftableName,GetFormatedName()])+';';
 end;
 
-function TDBPrimaryKey.EqualityScript(Obj: TDBObject): string;
+function TDBPrimaryKey.EqualityScript(Obj: TDBObject; args : array of TObject): string;
 begin
    result := '';
    if (isSameObject(Obj)) then begin
@@ -242,7 +242,7 @@ begin
   Result := Format('ALTER TABLE %s DROP CONSTRAINT %s',[ftableName,GetFormatedName()])+';';
 end;
 
-function TDBUnique.EqualityScript(Obj: TDBObject): string;
+function TDBUnique.EqualityScript(Obj: TDBObject; args : array of TObject): string;
 begin
    result := '';
    if (isSameObject(Obj)) then begin
@@ -276,7 +276,7 @@ begin
    Result := Format('ALTER TABLE %s DROP CONSTRAINT %s',[ftableName,GetFormatedName()])+';';
 end;
 
-function TDBForeignKey.EqualityScript(Obj: TDBObject): string;
+function TDBForeignKey.EqualityScript(Obj: TDBObject; args : array of TObject): string;
 begin
    result := '';
    if (isSameObject(Obj)) then begin
@@ -307,7 +307,7 @@ begin
   Result := Format('ALTER TABLE %s DROP CONSTRAINT %s',[FtableName,GetFormatedName()])+';';
 end;
 
-function TDBCheck.EqualityScript(Obj: TDBObject): string;
+function TDBCheck.EqualityScript(Obj: TDBObject; args : array of TObject): string;
 begin
    result := '';
    if (isSameObject(Obj)) then begin

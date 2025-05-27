@@ -15,6 +15,7 @@ type IDatabase = interface
     function GetFunctions: TList<TDBFunction>;
     function GetTriggers: TList<TDBTrigger>;
     function GetGenerators: TList<TDBGenerator>;
+    function GetAllGenerators: TList<TDBGenerator>;
     function GetIndices: TList<TDBIndex>;
 
 end;

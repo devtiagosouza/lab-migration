@@ -20,7 +20,7 @@ interface
 
       function DDLCreate: string; override;
 
-      function EqualityScript(Obj: TDBObject) : string; override;
+      function EqualityScript(Obj: TDBObject; args : array of TObject) : string; override;
 
       constructor Create();
   end;
@@ -72,7 +72,7 @@ begin
   result := sql.AsString('^');
 end;
 
-function TDBFunction.EqualityScript(Obj: TDBObject): string;
+function TDBFunction.EqualityScript(Obj: TDBObject; args : array of TObject): string;
 begin
  result := '';
  if (isSameObject(Obj)) then begin

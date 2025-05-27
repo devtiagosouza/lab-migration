@@ -101,7 +101,7 @@ try
     ModelDatabase.LoadMetadata;
 
 
-    SetGenerators(ModelDatabase.GetTables, TargetDatabase.GetTables);
+   // SetGenerators(ModelDatabase.GetTables, TargetDatabase.GetTables);
     AddEqualityScript<TDBTable>(script, ModelDatabase.GetTables, TargetDatabase.GetTables);
     AddEqualityScript<TDBView>(script, ModelDatabase.GetViews, TargetDatabase.GetViews);
     AddEqualityScript<TDBProcedure>(script, ModelDatabase.GetProcedures, TargetDatabase.GetProcedures);
@@ -123,6 +123,7 @@ procedure TMegaMigration.AddEqualityScript<T>(AScript : IScriptBuilder; AModelLi
 var
  model : TDBObject;
  target : TDBObject;
+ vGen : TDBGenerator;
 begin
     for model in AModelList do begin
        target := ATargetList.First(function(obj : T) : boolean
@@ -130,10 +131,19 @@ begin
            result := (obj as TDBObject).Name = model.Name;
        end);
 
-       if (target = nil) then begin
+
+
+
+       if (target = nil) then begin  //nao existe
            AScript.AppendLine(model.DDLCreate);
        end
-       else AScript.AppendLine(model.EqualityScript(target));
+       else begin
+
+          if (model is TDBTable) then
+             AScript.AppendLine(model.EqualityScript(target,[TargetDatabase.GetAllGenerators]))
+          else  AScript.AppendLine(model.EqualityScript(target,[]));
+
+       end;
     end;
 end;
 

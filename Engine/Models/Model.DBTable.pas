@@ -15,7 +15,6 @@ interface
     FUniqueConstraints: TList<TDBUnique>;
     FIndices: TList<TDBIndex>;
     FTriggers: TList<TDBTrigger>;
-    FGeneratorsNotExists : TList<TDBGenerator>;
 
 
     function GetMaxDigitCount<T: class>(const AList: TList<T>; PropertyGetter: TFunc<T, string>): Integer;
@@ -35,9 +34,8 @@ interface
 
 
       function DDLCreate: string; override;
-      function EqualityScript(Obj: TDBObject) : string; override;
+      function EqualityScript(Obj: TDBObject; args : array of TObject) : string; override;
 
-      procedure SetGeneratorsNotExists(gen : TDBGenerator);
 
       constructor Create();
 
@@ -60,7 +58,6 @@ begin
   FUniqueConstraints := TList<TDBUnique>.Create;
   FIndices := TList<TDBIndex>.Create;
   FTriggers := TList<TDBTrigger>.Create;
-  FGeneratorsNotExists := TList<TDBGenerator>.Create;
   ObjectTypeFriendlyName := 'Tabela';
 end;
 
@@ -203,7 +200,7 @@ begin
     result := Script.AsString;
 end;
 
-function TDBTable.EqualityScript(Obj: TDBObject): string;
+function TDBTable.EqualityScript(Obj: TDBObject; args : array of TObject): string;
 var
   outro : TDBTable;
 
@@ -220,14 +217,25 @@ begin
    script := TScriptBuilder.Create;
 
    outro := TDBTable(Obj);
+
+
+
+
    for vGen in GetGenerators do begin
 
-       vOtherGen := outro.Generators.First(function(g : TDBGenerator) : boolean begin
-          result := g.Name = vGen.Name;
-       end);
+       if (Length(args) > 0) and (args[0] is TList<TDBGenerator>) then begin
+          vOtherGen := (args[0] as TList<TDBGenerator>).First(function(g : TDBGenerator) : boolean begin
+            result := g.Name = vGen.Name;
+          end);
+       end
+       else begin
+          vOtherGen := outro.Generators.First(function(g : TDBGenerator) : boolean begin
+            result := g.Name = vGen.Name;
+          end);
+       end;
 
        if (vOtherGen <> nil) then begin
-           sql := vGen.EqualityScript(vOtherGen);
+           sql := vGen.EqualityScript(vOtherGen,[]);
            script.AppendLine(sql);
        end
        else begin
@@ -242,7 +250,7 @@ begin
        end);
 
        if (vOtherField <> nil) then begin
-           sql := vField.EqualityScript(vOtherField);
+           sql := vField.EqualityScript(vOtherField,[]);
            script.AppendLine(sql);
        end
        else begin
@@ -256,7 +264,7 @@ begin
        end);
 
        if (vOtherPK <> nil) then begin
-           sql := vPK.EqualityScript(vOtherPK);
+           sql := vPK.EqualityScript(vOtherPK,[]);
            script.AppendLine(sql);
        end
        else begin
@@ -271,7 +279,7 @@ begin
        end);
 
        if (vOtherFK <> nil) then begin
-           sql := vFK.EqualityScript(vOtherFK);
+           sql := vFK.EqualityScript(vOtherFK,[]);
            script.AppendLine(sql);
        end
        else begin
@@ -286,7 +294,7 @@ begin
        end);
 
        if (vOtherCheck <> nil) then begin
-           sql := vCheck.EqualityScript(vOtherCheck);
+           sql := vCheck.EqualityScript(vOtherCheck,[]);
            script.AppendLine(sql);
        end
        else begin
@@ -300,7 +308,7 @@ begin
        end);
 
        if (vOtherUnique <> nil) then begin
-           sql := vUnique.EqualityScript(vOtherUnique);
+           sql := vUnique.EqualityScript(vOtherUnique,[]);
            script.AppendLine(sql);
        end
        else begin
@@ -314,7 +322,7 @@ begin
        end);
 
        if (vOtherIndex <> nil) then begin
-           sql := vIndex.EqualityScript(vOtherIndex);
+           sql := vIndex.EqualityScript(vOtherIndex,[]);
            script.AppendLine(sql);
        end
        else begin
@@ -382,12 +390,6 @@ begin
   Result := MaxLength;
 end;
 
-
-
-procedure TDBTable.SetGeneratorsNotExists(gen: TDBGenerator);
-begin
-  FGeneratorsNotExists.Add(gen);
-end;
 
 end.
 

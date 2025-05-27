@@ -29,8 +29,9 @@ interface
     function GetFieldSet : string;
 
     function DDLCreate: string; override;
+    function DDLAlter: string; override;
 
-    function EqualityScript(Obj: TDBObject) : string; override;
+    function EqualityScript(Obj: TDBObject; args : array of TObject) : string; override;
 
 
     function GetFullFieldSet(spacing : integer = 0) : string;
@@ -55,6 +56,18 @@ begin
   ObjectTypeFriendlyName := 'Campo';
 end;
 
+function TDBField.DDLAlter: string;
+begin
+   result := TSQLBuilder.Create()
+   .Append('ALTER TABLE :TABLE_NAME ALTER COLUMN :NAME :TYPE')
+     .Append(GetFieldSet)
+    .AsTemplate
+     .SetPar('TABLE_NAME', TableName, True)
+     .SetPar('NAME',Name,true)
+      .SetPar('TYPE',FieldType)
+   .asString(';')
+end;
+
 function TDBField.DDLCreate: string;
 begin
    result := TSQLBuilder.Create()
@@ -69,7 +82,7 @@ end;
 
 
 
-function TDBField.EqualityScript(Obj: TDBObject): string;
+function TDBField.EqualityScript(Obj: TDBObject; args : array of TObject): string;
 var
   Outro: TDBField;
 begin
@@ -80,11 +93,8 @@ begin
      if (FTableName = outro.TableName) then begin
 
         if (FFieldType <> Outro.FFieldType) or
-               (FDefaultValue <> Outro.FDefaultValue) or
-               (FNotNull <> Outro.FNotNull) or
-               (FCharset <> Outro.FCharset) or
-               (FCollate <> Outro.FCollate) then
-             result :=  DDLCreate;
+               (GetFieldSet <> Outro.GetFieldSet) then
+             result :=  DDLAlter;
      end;
  end;
 
@@ -99,6 +109,8 @@ begin
    if (NotNull) then
         Result := Result +' NOT NULL';
 
+
+
    if (string.isnullorempty(Charset) = FALSE) AND (Charset <> 'NONE') then
          Result := Result +' '+Charset;
 
@@ -108,6 +120,8 @@ begin
          if (string.isNullOrEmpty(Result.Trim()) = false) then
              Result := ' '+Result.Trim()
          else Result := '';
+
+         result := Result.Trim;
 
 end;
 
