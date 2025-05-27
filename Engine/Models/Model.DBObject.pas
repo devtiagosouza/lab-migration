@@ -4,17 +4,12 @@ interface
 
 uses System.SysUtils,FirebirdKeywords;
 
-
-
 type
-
-
   TDBObject = class
 
    protected
     function IsSameObject(Obj: TDBObject) : boolean;
     function IsSameText(const text1,text2 : string) : boolean;
-
 
    private
     FName: string;
@@ -25,14 +20,15 @@ type
        property Name : string read FName write FName;
        property ObjectTypeFriendlyName : string read GetObjectTypeFriendlyName write FObjectTypeFriendlyName;
 
-
        function GetFormatedName: string;
 
-       function DDLCreate : string; virtual;
+       function DDLCreate() : string; overload; virtual;
+       function DDLCreate(args : array of TObject) : string; overload; virtual;
        function DDLDrop : string; virtual;
        function DDLAlter : string; virtual;
 
-       function EqualityScript(Obj: TDBObject; args : array of TObject) : string; virtual;
+       function EqualityScript(Obj: TDBObject; args : array of TObject) : string; overload; virtual;
+       function EqualityScript(Obj: TDBObject) : string; overload; virtual;
    end;
 
 
@@ -42,9 +38,6 @@ implementation
 
 { TDBObject }
 
-
-
-
 function TDBObject.DDLAlter: string;
 begin
   result := '';
@@ -52,12 +45,22 @@ end;
 
 function TDBObject.DDLCreate: string;
 begin
-  raise Exception.Create('Implemente o método CreateCommand');
+  result := DDLCreate([]);
+end;
+
+function TDBObject.DDLCreate(args: array of TObject): string;
+begin
+   raise Exception.Create('Implemente o método DDLCreate');
 end;
 
 function TDBObject.DDLDrop: string;
 begin
   result := '';
+end;
+
+function TDBObject.EqualityScript(Obj: TDBObject): string;
+begin
+   result := EqualityScript(Obj,[]);
 end;
 
 function TDBObject.EqualityScript(Obj: TDBObject;args : array of TObject): string;

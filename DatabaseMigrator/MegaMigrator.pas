@@ -4,7 +4,7 @@ interface
 
  uses System.classes,FireDAC.Comp.Client,Model.DBView,  System.SysUtils, Database, Database.Interfaces, ClipBrd,
  Model.DBTable,Model.DBProcedure, Model.DBGenerator, Model.DBFunction,System.IOUtils,Migration.ClassWriter, 
- Model.DBObject, DCollections, IWSystem,SqlResources,FireDAC.Stan.Option, Sql.Script.Builder;
+ Model.DBObject,Model.DBTrigger, DCollections, IWSystem,SqlResources,FireDAC.Stan.Option, Sql.Script.Builder;
 
  const CLASS_PATH = 'C:\Fontes\Labs\lab-migration\_migrations';
 
@@ -22,7 +22,7 @@ interface
    function CreateModelConnection() : TFDConnection;
 
    procedure AddEqualityScript<T : TDBObject>(AScript : IScriptBuilder; AModelList, ATargetList : TList<T>);
-   procedure SetGenerators(AModelList, ATargetList : TList<TDBTable>) ;
+   procedure AddEqualityScriptTable(AScript : IScriptBuilder; AModelList, ATargetList : TList<TDBTable>);
 
 
  public
@@ -37,6 +37,8 @@ interface
 implementation
 
 { TMegaMigration }
+
+
 
 constructor TMegaMigration.Create(ADatabasePath : string);
 begin
@@ -101,8 +103,7 @@ try
     ModelDatabase.LoadMetadata;
 
 
-   // SetGenerators(ModelDatabase.GetTables, TargetDatabase.GetTables);
-    AddEqualityScript<TDBTable>(script, ModelDatabase.GetTables, TargetDatabase.GetTables);
+    AddEqualityScriptTable(script, ModelDatabase.GetTables, TargetDatabase.GetTables);
     AddEqualityScript<TDBView>(script, ModelDatabase.GetViews, TargetDatabase.GetViews);
     AddEqualityScript<TDBProcedure>(script, ModelDatabase.GetProcedures, TargetDatabase.GetProcedures);
     AddEqualityScript<TDBFunction>(script, ModelDatabase.GetFunctions, TargetDatabase.GetFunctions);
@@ -118,6 +119,31 @@ end;
 
 end;
 
+
+procedure TMegaMigration.AddEqualityScriptTable(AScript: IScriptBuilder;
+  AModelList, ATargetList: TList<TDBTable>);
+var
+ modelTable : TDBTable;
+ targetTable : TDBTable;
+ vGen : TDBGenerator;
+begin
+    for modelTable in AModelList do begin
+       targetTable := ATargetList.First(function(obj : TDBTable) : boolean
+       begin
+           result := obj.Name = modelTable.Name;
+       end);
+
+
+       if (targetTable = nil) then begin
+           AScript.AppendLine(modelTable.DDLCreate([TargetDatabase.GetAllGenerators]))
+       end
+       else begin
+           AScript.AppendLine(modelTable.EqualityScript(targetTable,[TargetDatabase.GetAllGenerators]))
+       end;
+    end;
+end;
+
+
 procedure TMegaMigration.AddEqualityScript<T>(AScript : IScriptBuilder; AModelList,
   ATargetList: TList<T>);
 var
@@ -131,18 +157,11 @@ begin
            result := (obj as TDBObject).Name = model.Name;
        end);
 
-
-
-
-       if (target = nil) then begin  //nao existe
-           AScript.AppendLine(model.DDLCreate);
+       if (target = nil) then begin
+          AScript.AppendLine(model.DDLCreate);
        end
        else begin
-
-          if (model is TDBTable) then
-             AScript.AppendLine(model.EqualityScript(target,[TargetDatabase.GetAllGenerators]))
-          else  AScript.AppendLine(model.EqualityScript(target,[]));
-
+          AScript.AppendLine(model.EqualityScript(target,[]));
        end;
     end;
 end;
@@ -150,11 +169,9 @@ end;
 
 procedure TMegaMigration.Migrate;
 var
- str : string;
+ script : string;
 begin
-  GenerateScript;
-
-
+  script := GenerateScript;
 end;
 
 procedure TMegaMigration.SaveClasses;
@@ -177,11 +194,7 @@ begin
   Writer.SavePas<TDBGenerator>( TargetDatabase.GetGenerators );
 end;
 
-procedure TMegaMigration.SetGenerators(AModelList,
-  ATargetList: TList<TDBTable>);
-begin
 
-end;
 
 end.
 

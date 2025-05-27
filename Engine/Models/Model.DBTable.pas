@@ -33,7 +33,8 @@ interface
       property Generators : TList<TDBGenerator> read GetGenerators;
 
 
-      function DDLCreate: string; override;
+      function DDLCreate(args: array of TObject): string; overload; override;
+      function DDLCreate() : string; overload; override;
       function EqualityScript(Obj: TDBObject; args : array of TObject) : string; override;
 
 
@@ -62,6 +63,11 @@ begin
 end;
 
 function TDBTable.DDLCreate: string;
+begin
+  Result := DDLCreate([]);
+end;
+
+function TDBTable.DDLCreate(args: array of TObject): string;
 var
   vField : TDBField;
   i,x: Integer;
@@ -71,6 +77,8 @@ var
 
   Sql : ISqlBuilder;
   MaxDigits : integer;
+
+  vGenToCompare : TList<TDBGenerator>;
 begin
 
   Script := TScriptBuilder.Create;
@@ -84,8 +92,23 @@ begin
 
 
   for I := 0 to Generators.Count - 1 do begin
-     vGenerator := Generators[i];
-     Script.AppendLine(vGenerator.DDLCreate);
+
+       if (Length(args) > 0) and (args[0] is TList<TDBGenerator>) then begin
+         vGenToCompare := (args[0] as TList<TDBGenerator>);
+
+         if vGenToCompare.Exists(function(g : TDBGenerator) : boolean
+         begin
+            result := g.Name = Generators[i].Name;
+         end) then begin
+             Script.AppendLine(vGenerator.DDLCreate);
+
+         end;
+
+       end
+       else Script.AppendLine(vGenerator.DDLCreate);
+
+
+
   end;
 
 
@@ -218,29 +241,33 @@ begin
 
    outro := TDBTable(Obj);
 
-
-
-
    for vGen in GetGenerators do begin
 
        if (Length(args) > 0) and (args[0] is TList<TDBGenerator>) then begin
-          vOtherGen := (args[0] as TList<TDBGenerator>).First(function(g : TDBGenerator) : boolean begin
-            result := g.Name = vGen.Name;
-          end);
-       end
-       else begin
-          vOtherGen := outro.Generators.First(function(g : TDBGenerator) : boolean begin
-            result := g.Name = vGen.Name;
-          end);
+
+           if ((args[0] as TList<TDBGenerator>).Exists(function(g : TDBGenerator) : boolean
+           begin
+              result := g.Name = vGen.Name;
+           end)) then begin
+
+               vOtherGen := outro.Generators.First(function(g : TDBGenerator) : boolean begin
+                  result := g.Name = vGen.Name;
+               end);
+
+
+
+               if (vOtherGen <> nil) then begin
+                   sql := vGen.EqualityScript(vOtherGen,[]);
+                   script.AppendLine(sql);
+               end
+               else begin
+                  script.AppendLine(vGen.DDLCreate);
+               end;
+           end;
+
        end;
 
-       if (vOtherGen <> nil) then begin
-           sql := vGen.EqualityScript(vOtherGen,[]);
-           script.AppendLine(sql);
-       end
-       else begin
-          script.AppendLine(vGen.DDLCreate);
-       end;
+
    end;
 
    for vField in FFields do begin
