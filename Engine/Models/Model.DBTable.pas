@@ -73,7 +73,7 @@ var
   i,x: Integer;
   Script: IScriptBuilder;
   primaryKey : TDBPrimaryKey;
-  vGenerator : TDBGenerator;
+ // vGenerator : TDBGenerator;
 
   Sql : ISqlBuilder;
   MaxDigits : integer;
@@ -100,14 +100,11 @@ begin
          begin
             result := g.Name = Generators[i].Name;
          end) then begin
-             Script.AppendLine(vGenerator.DDLCreate);
-
+             Script.AppendLine(Generators[i].DDLCreate);
          end;
 
        end
-       else Script.AppendLine(vGenerator.DDLCreate);
-
-
+       else Script.AppendLine(Generators[i].DDLCreate);
 
   end;
 
@@ -127,6 +124,7 @@ begin
     begin
       vField := Fields[i];
       Sql.AppendLine(vField.GetFullFieldSet(MaxDigits+1));
+
 
       if (i < Pred(Fields.Count)) then
         Sql.DecIndent.Append(',').IncIndent;

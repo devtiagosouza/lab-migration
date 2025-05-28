@@ -3,7 +3,7 @@ unit SqlResources;
 interface
 
  uses
-  Classes, SysUtils,Windows,IdHashMessageDigest, IdGlobal;
+  Classes, SysUtils,Windows,VCL.Forms,IdHashMessageDigest, IdGlobal,System.Zip;
 
 Type TSqlResources = class
 
@@ -13,6 +13,7 @@ private
 public
    class function Read(const aResourceName: string): string; static;
    class function SaveFile(ResourceName : string; Path : string; FileName : string): Boolean;
+   class function SaveZipFile(ResourceName : string; Path : string; FileName : string) : Boolean;
    class function GetMD5FromResource(const ResName: string; const ResType: PChar): string;
    class function GetMD5FromFile(const FileName: string): string;
 end;
@@ -28,17 +29,13 @@ var
   FileStream: TFileStream;
   MD5: TIdHashMessageDigest5;
 begin
-  // Verifica se o arquivo existe
   if not FileExists(FileName) then
     raise Exception.Create('Arquivo não encontrado: ' + FileName);
 
-  // Cria o stream para ler o arquivo
   FileStream := TFileStream.Create(FileName, fmOpenRead);
   try
-    // Cria o objeto MD5
     MD5 := TIdHashMessageDigest5.Create;
     try
-      // Calcula o hash MD5 do arquivo
       Result := MD5.HashStreamAsHex(FileStream);
     finally
       MD5.Free;
@@ -57,22 +54,18 @@ var
   Stream: TMemoryStream;
   MD5: TIdHashMessageDigest5;
 begin
-  // Localiza o recurso binário pelo nome e tipo
   ResInfo := FindResource(HInstance, PChar(ResName), ResType);
   if ResInfo = 0 then
     raise Exception.Create('Recurso não encontrado.');
 
-  // Carrega os dados do recurso
   ResData := LockResource(LoadResource(HInstance, ResInfo));
   ResSize := SizeofResource(HInstance, ResInfo);
 
-  // Cria um stream na memória com os dados do recurso
   Stream := TMemoryStream.Create;
   try
     Stream.Write(ResData^, ResSize);
-    Stream.Position := 0; // Reposiciona o stream para o início
+    Stream.Position := 0;
 
-    // Calcula o hash MD5
     MD5 := TIdHashMessageDigest5.Create;
     try
       Result := MD5.HashStreamAsHex(Stream);
@@ -125,5 +118,42 @@ begin
 
  result := FileExists(pathSalvar);
 end;
+
+class function TSqlResources.SaveZipFile(ResourceName, Path, FileName: string): Boolean;
+var
+  ext: string;
+  fileZip: string;
+  zip: TZipFile;
+  Stream: TMemoryStream;
+  TmpStream: TStream;
+  Header: TZipHeader;
+  index: Integer;
+begin
+  ext := ExtractFileExt(FileName);
+  fileZip := Copy(FileName, 1, FileName.LastIndexOf(ext)) + '.zip';
+  SaveFile(ResourceName, Path, fileZip);
+
+  try
+    zip := TZipFile.Create;
+    zip.Open(Path + '\' + fileZip, TZipMode.zmRead);
+
+    index := 0; // ou zip.IndexOf(...) se quiser buscar pelo nome
+    Stream := TMemoryStream.Create;
+    TmpStream := Stream;
+    try
+      zip.Read(index, TmpStream, Header);
+      Stream.Position := 0;
+      Stream.SaveToFile(Path + '\' + FileName);
+    finally
+      Stream.Free;
+    end;
+
+    Result := True;
+  except
+    on e: Exception do
+      Result := False;
+  end;
+end;
+
 
 end.

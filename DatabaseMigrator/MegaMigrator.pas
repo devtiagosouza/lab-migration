@@ -67,7 +67,7 @@ begin
 end;
 
 function TMegaMigration.CreateModelConnection: TFDConnection;
-const MODEL_DB_NAME = 'MODEL_DB';
+const MODEL_DB_NAME = 'MIGRATION_DB';
 const MODEL_DB_FILE_NAME = '_migration.db';
 var
  path : string;
@@ -85,8 +85,8 @@ begin
    databasePath := path+MODEL_DB_FILE_NAME;
    if (FileExists(databasePath)) then
         FileDelete(databasePath);
-   
-   SqlResources.TSqlResources.SaveFile(MODEL_DB_NAME, path, MODEL_DB_FILE_NAME);
+
+   SqlResources.TSqlResources.SaveZipFile(MODEL_DB_NAME, path, MODEL_DB_FILE_NAME);
 
    Result := CreateConnection(databasePath);
 end;
