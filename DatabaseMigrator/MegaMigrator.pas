@@ -82,6 +82,10 @@ begin
 
 
    path := 'C:\MFX\'; // gsAppPath;
+
+
+   path := path+'_migration\';
+
    databasePath := path+MODEL_DB_FILE_NAME;
    if (FileExists(databasePath)) then
         FileDelete(databasePath);

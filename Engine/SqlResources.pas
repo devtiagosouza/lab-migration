@@ -128,25 +128,23 @@ var
   TmpStream: TStream;
   Header: TZipHeader;
   index: Integer;
+  arquivoCompactado : string;
 begin
-  ext := ExtractFileExt(FileName);
+ ext := ExtractFileExt(FileName);
   fileZip := Copy(FileName, 1, FileName.LastIndexOf(ext)) + '.zip';
   SaveFile(ResourceName, Path, fileZip);
 
   try
     zip := TZipFile.Create;
     zip.Open(Path + '\' + fileZip, TZipMode.zmRead);
+    index := 0;
+    arquivoCompactado := zip.FileName[0];
+    zip.Close;
+    zip.Free;
+    TZipFile.ExtractZipFile(Path + '\' + fileZip,Path );
+    RenameFile(path+'\'+arquivoCompactado, path+'\'+FileName);
 
-    index := 0; // ou zip.IndexOf(...) se quiser buscar pelo nome
-    Stream := TMemoryStream.Create;
-    TmpStream := Stream;
-    try
-      zip.Read(index, TmpStream, Header);
-      Stream.Position := 0;
-      Stream.SaveToFile(Path + '\' + FileName);
-    finally
-      Stream.Free;
-    end;
+    DeleteFile(pchar(path+'\'+fileZip));
 
     Result := True;
   except
