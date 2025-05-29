@@ -9,6 +9,16 @@ uses
                    comCreateConstraintPK, comCreateConstraintUnique, comCreateConstraintCheck, comCreateConstraintFK, comCreateTable,
                    comCreateField, comCreateOrAlterView, comCreateGenerator,comCreateOrAlterTrigger, comCreateOrAlterProcedure,
                    comCreateOrAlterFunction);
+
+    type TFieldType = (ftSmallInt, ftInteger, ftBigInt, ftBoolean, ftFloat, ftDoublePrecision, ftNumeric, ftDecimal, ftDate, ftTime,
+    ftTimestamp, ftChar, ftVarchar, ftBlob );
+
+    type TFieldTypeMath = record
+       FieldType: TFieldType;
+       Regex : string;
+       Match : TMatch;
+    end;
+
     type TDDLMatch = record
      DDLType: TDDLType;
      Regex : string;
@@ -19,7 +29,8 @@ uses
   function IsValidFirebirdType(const FieldType: string): Boolean;
   function MatchFirebirdType(const Text: string): TMatch;
   function MatchDDL(const AText: string) : TDDLMatch;
-  function GetPattern(ADDLCommand : TDDLType) : string;
+  function GetPattern(ADDLCommand : TDDLType) : string; overload;
+  function GetPattern(AFieldType : TFieldType) : string; overload;
 
   implementation
 
@@ -38,6 +49,7 @@ type
 var
   FirebirdTypes: TDictionary<string, string>;
   DDLPatterns : TDictionary<TDDLType, string>;
+  FieldTypePatterns : TDictionary<TFieldType, string>;
 
 
 procedure InitializeDDLPatterns;
@@ -62,6 +74,30 @@ begin
    DDLPatterns.Add(comCreateOrAlterProcedure,'(?is)^\s*CREATE\s+OR\s+ALTER\s+PROCEDURE\s+(\w+)(?:\s*\((.*?)\))?(?:\s*RETURNS\s*\((.*?)\))?\s*AS\s+(.*END\s*\^?\s*)$');
    DDLPatterns.Add(comCreateOrAlterFunction,'(?is)^\s*CREATE\s+OR\s+ALTER\s+FUNCTION\s+(\w+)(?:\s*\((.*?)\))?\s+RETURNS\s+([\w\s\(\),]+?)\s+AS\s+(.*END\s*\^?\s*)$');
    DDLPatterns.Add(comCreateField,'^\s*ALTER\s+TABLE\s+(\w+)\s+ADD\s+(?!CONSTRAINT\s)(\w+)\s+(.+)$');
+end;
+
+procedure InitializeFieldTypePatterns;
+begin
+   FieldTypePatterns := TDictionary<TFieldType, string>.Create;
+
+   with FieldTypePatterns do begin
+       Add(ftSmallInt,'\b(SMALLINT)\b');
+       Add(ftInteger,'\b(INTEGER)\b');
+       Add(ftBigInt,'\b(BIGINT)\b');
+       Add(ftBoolean,'\b(BOOLEAN)\b');
+       Add(ftFloat,'\b(FLOAT)\b');
+       Add(ftDoublePrecision,'\b(DOUBLE\s+PRECISION)\b');
+       Add(ftNumeric,'\b(NUMERIC)\s*\(\s*(\d+)\s*,\s*(\d+)\s*\)');
+       Add(ftDecimal,'\b(DECIMAL)\s*\(\s*(\d+)\s*,\s*(\d+)\s*\)');
+       Add(ftDate,'\b(DATE)\b');
+       Add(ftTime,'\b(TIME)\b');
+       Add(ftTimestamp,'\b(TIMESTAMP)\b');
+       Add(ftChar,'\b(CHAR)\s*\(\s*(\d+)\s*\s*\)');
+       Add(ftVarchar,'\b(VARCHAR)\s*\(\s*(\d+)\s*\s*\)');
+       Add(ftBlob,'\b(BLOB)\s+(SUB_TYPE)\s+(BINARY|TEXT)\s+(SEGMENT\s+SIZE)\s+(\d+)');
+   end;
+
+
 end;
 
 procedure InitializeFirebirdTypes;
@@ -119,6 +155,14 @@ begin
   Result := pair.Value;
 end;
 
+function GetPattern(AFieldType : TFieldType) : string;
+var
+  pair : TPair<TFieldType,String>;
+begin
+  pair := FieldTypePatterns.ExtractPair(AFieldType);
+  Result := pair.Value;
+end;
+
 { Retorna o primeiro match válido da lista de regex do dicionário Firebird }
 function MatchFirebirdType(const Text: string): TMatch;
 var
@@ -162,10 +206,12 @@ end;
 initialization
   InitializeFirebirdTypes;
   InitializeDDLPatterns;
+  InitializeFieldTypePatterns
 
 finalization
   FirebirdTypes.Free;
   DDLPatterns.Free;
+  FieldTypePatterns.Free;
 
 End.
 

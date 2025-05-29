@@ -75,6 +75,7 @@ object Form1: TForm1
     ParentFont = False
     ScrollBars = ssBoth
     TabOrder = 2
+    ExplicitTop = 335
   end
   object FDConnection1: TFDConnection
     Params.Strings = (
