@@ -189,6 +189,7 @@ begin
         with vField do begin
            TableName    :=  aTableName.ToUpper;
            Name         := query.FieldByName('FIELD_NAME').AsString;
+           DomainName   := query.FieldByName('FIELD_SOURCE').AsString;
            FieldType    := query.FieldByName('FIELD_TYPE').AsString;
            NotNull      :=  query.FieldByName('FIELD_NULL').AsString = 'NOT NULL';
            Charset      := query.FieldByName('FIELD_CHARSET').AsString;

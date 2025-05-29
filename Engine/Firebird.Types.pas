@@ -10,33 +10,41 @@ uses
                    comCreateField, comCreateOrAlterView, comCreateGenerator,comCreateOrAlterTrigger, comCreateOrAlterProcedure,
                    comCreateOrAlterFunction);
 
-    type TFieldType = (ftSmallInt, ftInteger, ftBigInt, ftBoolean, ftFloat, ftDoublePrecision, ftNumeric, ftDecimal, ftDate, ftTime,
+    type TFieldType = (ftUnknown, ftSmallInt, ftInteger, ftBigInt, ftBoolean, ftFloat, ftDoublePrecision, ftNumeric, ftDecimal, ftDate, ftTime,
     ftTimestamp, ftChar, ftVarchar, ftBlob );
 
-    type TFieldTypeMath = record
+    type TFieldTypeArray = array of TFieldType;
+
+    type TFieldTypeMatch = record
        FieldType: TFieldType;
        Regex : string;
        Match : TMatch;
     end;
 
-    type TDDLMatch = record
+   type TDDLMatch = record
      DDLType: TDDLType;
      Regex : string;
      Match : TMatch;
   end;
 
+  type TTypeConversion = (conversionIsNotSupported, conversionNatural, conversionDataTransfer);
+
+
+
   procedure InitializeFirebirdTypes;
   function IsValidFirebirdType(const FieldType: string): Boolean;
-  function MatchFirebirdType(const Text: string): TMatch;
+  function MatchFirebirdType(const Text: string) : TFieldTypeMatch;
+
+//  function MatchFirebirdType(const Text: string): TMatch;
+
   function MatchDDL(const AText: string) : TDDLMatch;
   function GetPattern(ADDLCommand : TDDLType) : string; overload;
   function GetPattern(AFieldType : TFieldType) : string; overload;
+  function ConversionTypeSupported(FromType,ToType : string) : TTypeConversion;
 
   implementation
 
   uses  System.SysUtils;
-
-
 
 type
   TFirebirdTypePattern = record
@@ -45,11 +53,80 @@ type
   end;
 
 
-
 var
   FirebirdTypes: TDictionary<string, string>;
   DDLPatterns : TDictionary<TDDLType, string>;
   FieldTypePatterns : TDictionary<TFieldType, string>;
+  NaturalTypeConversionMap : TDictionary<TFieldType,TFieldTypeArray>;
+  TypeConversionExportDataMap : TDictionary<TFieldType,TFieldTypeArray>;
+
+procedure InitializeNaturalTypeConversionMap;
+begin
+   NaturalTypeConversionMap := TDictionary<TFieldType,TFieldTypeArray>.Create;
+   TypeConversionExportDataMap := TDictionary<TFieldType,TFieldTypeArray>.Create;
+
+   with NaturalTypeConversionMap do begin
+       Add(ftSmallInt,[ftInteger,ftBigInt,ftChar,ftVarchar]);
+       Add(ftInteger,[ftBigInt,ftChar,ftVarchar]);
+       Add(ftBigInt,[ftChar,ftVarchar]);
+       Add(ftBoolean,[]);
+       Add(ftFloat,[ftDoublePrecision,ftChar,ftVarchar]);
+       Add(ftDoublePrecision,[ftChar,ftVarchar]);  //24+ chars
+       Add(ftNumeric,[ftNumeric,ftBigInt,ftDecimal,ftChar,ftVarchar  ]); //18+ chars
+       Add(ftDecimal,[ftDecimal,ftNumeric,ftBigInt,ftChar,ftVarchar]);
+       Add(ftDate,[ftTimestamp,ftChar,ftVarchar]); //10+ chars
+       Add(ftTime,[ftChar,ftVarchar]); //13+ chars
+       Add(ftTimestamp,[ftChar,ftVarchar]); //25+ chars
+       Add(ftChar,[ftChar,ftVarchar]);
+       Add(ftVarchar,[ftVarchar,ftChar]);
+       Add(ftBlob,[]);
+   end;
+
+   with TypeConversionExportDataMap do begin
+       Add(ftFloat,[ftNumeric]);
+       Add(ftDoublePrecision,[ftNumeric]);
+   end;
+
+end;
+
+function ConversionTypeSupported(FromType,ToType : string) : TTypeConversion;
+          function FieldTypeInArray(const AValue: TFieldType; const AArray: TFieldTypeArray): Boolean;
+          var
+            Item: TFieldType;
+          begin
+            Result := False;
+            for Item in AArray do
+            begin
+              if Item = AValue then
+              begin
+                Result := True;
+                Exit;
+              end;
+            end;
+          end;
+var
+  FromTypeMatch : TFieldTypeMatch;
+  ToTypeMatch : TFieldTypeMatch;
+  possibleList : TFieldTypeArray;
+begin
+  Result := conversionIsNotSupported;
+
+  FromTypeMatch := MatchFirebirdType(FromType);
+  ToTypeMatch := MatchFirebirdType(ToType);
+
+  if (FromTypeMatch.Match.Success) and (ToTypeMatch.Match.Success) then begin
+      if (NaturalTypeConversionMap.TryGetValue(FromTypeMatch.FieldType,possibleList)) then begin
+         if (FieldTypeInArray(FromTypeMatch.FieldType, possibleList)) then
+            result := conversionNatural;
+      end
+      else if (TypeConversionExportDataMap.TryGetValue(FromTypeMatch.FieldType,possibleList))  then begin
+         if (FieldTypeInArray(FromTypeMatch.FieldType, possibleList)) then
+            result := conversionDataTransfer;
+      end;
+  end;
+
+end;
+
 
 
 procedure InitializeDDLPatterns;
@@ -163,26 +240,49 @@ begin
   Result := pair.Value;
 end;
 
-{ Retorna o primeiro match válido da lista de regex do dicionário Firebird }
-function MatchFirebirdType(const Text: string): TMatch;
+
+function MatchFirebirdType(const Text: string) : TFieldTypeMatch;
 var
-  Pair: TPair<string, string>;
+  Pair: TPair<TFieldType, string>;
   Regex: TRegEx;
   M: TMatch;
 begin
-  Result := Default(TMatch);
-  for Pair in FirebirdTypes do
+  Result.FieldType := ftUnknown;
+  Result.Regex := '';
+  Result.Match := Default(TMatch);
+
+  for Pair in FieldTypePatterns do
   begin
-    Regex := TRegEx.Create(Pair.Value, [roIgnoreCase]);
+    Regex := TRegEx.Create(Pair.Value, [roIgnoreCase, roSingleLine]);
     M := Regex.Match(Text);
     if M.Success then
     begin
-      Result := M;
+      Result.FieldType := Pair.Key;
+      Result.Regex := Pair.Value;
+      Result.Match := M;
       Exit;
     end;
   end;
 end;
 
+//function MatchFirebirdType(const Text: string): TMatch;
+//var
+//  Pair: TPair<string, string>;
+//  Regex: TRegEx;
+//  M: TMatch;
+//begin
+//  Result := Default(TMatch);
+//  for Pair in FirebirdTypes do
+//  begin
+//    Regex := TRegEx.Create(Pair.Value, [roIgnoreCase]);
+//    M := Regex.Match(Text);
+//    if M.Success then
+//    begin
+//      Result := M;
+//      Exit;
+//    end;
+//  end;
+//end;
 
 
 function IsValidFirebirdType(const FieldType: string): Boolean;
@@ -206,12 +306,14 @@ end;
 initialization
   InitializeFirebirdTypes;
   InitializeDDLPatterns;
-  InitializeFieldTypePatterns
+  InitializeFieldTypePatterns;
+  InitializeNaturalTypeConversionMap;
 
 finalization
   FirebirdTypes.Free;
   DDLPatterns.Free;
   FieldTypePatterns.Free;
+  NaturalTypeConversionMap.Free;
 
 End.
 

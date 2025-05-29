@@ -14,11 +14,10 @@ interface
     FCharset: string;
     FCollate: string;
     FTableName: string;
-
-
+    FDomainName: string;
 
  public
-
+    property DomainName : string read FDomainName write FDomainName;
     property TableName : string read FTableName write FTableName;
     property FieldType : string read FFieldType write FFieldType;
     property NotNull : boolean read FNotNull write FNotNull;
@@ -45,7 +44,7 @@ interface
 
 implementation
 
-  uses Sql.Builder;
+  uses Sql.Builder,TypeConverter.Natural, TypeConverter.Interfaces;
 
 { TDBField }
 
@@ -85,6 +84,7 @@ end;
 function TDBField.EqualityScript(Obj: TDBObject; args : array of TObject): string;
 var
   Outro: TDBField;
+  converter : ITypeConverter;
 begin
  result := '';
  if (isSameObject(Obj)) then begin
@@ -93,8 +93,16 @@ begin
      if (FTableName = outro.TableName) then begin
 
         if (FFieldType <> Outro.FFieldType) or
-               (GetFieldSet <> Outro.GetFieldSet) then
-             result :=  DDLAlter;
+               (GetFieldSet <> Outro.GetFieldSet) then begin
+                    converter := TConverterFactory.GetConverter(fTableName, self, outro);
+                    if (converter <> nil) then begin
+                         Result := converter.GenerateScript;
+
+
+                    end
+                    else Result := DDLAlter;
+               end;
+
      end;
  end;
 

@@ -34,13 +34,16 @@ uses
   Parser.Triggers in 'Engine\Parsers\Parser.Triggers.pas',
   DelphiUnitWriter in 'Engine\DelphiUnitWriter.pas',
   Migration.ClassWriter in 'Migration.ClassWriter.pas',
-  TaskTimer in 'TaskTimer.pas' {$R *.res},
+  TaskTimer in 'TaskTimer.pas',
   MegaMigrator in 'DatabaseMigrator\MegaMigrator.pas',
   Database.Interfaces in 'DatabaseMigrator\Database.Interfaces.pas',
   Database in 'DatabaseMigrator\Database.pas',
   DebugFilter in 'DebugFilter.pas',
   untFrmWaitForm in 'WaitForm\untFrmWaitForm.pas' {FrmWait},
-  WaitScreen in 'WaitForm\WaitScreen.pas';
+  WaitScreen in 'WaitForm\WaitScreen.pas',
+  TypeConverter.Interfaces in 'Engine\TypeConverter.Interfaces.pas',
+  TypeConverter.FloatToNumeric in 'Engine\TypeConverter.FloatToNumeric.pas',
+  TypeConverter.Natural in 'Engine\TypeConverter.Natural.pas';
 
 {$R *.res}
 

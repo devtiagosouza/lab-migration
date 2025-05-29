@@ -18,6 +18,7 @@ type
 
    public
        property Name : string read FName write FName;
+
        property ObjectTypeFriendlyName : string read GetObjectTypeFriendlyName write FObjectTypeFriendlyName;
 
        function GetFormatedName: string;

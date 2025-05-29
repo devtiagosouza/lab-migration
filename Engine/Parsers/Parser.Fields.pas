@@ -22,7 +22,9 @@ class function TFieldParser.ParseField(const AColumnsDefs, ATableName: string): 
 var
  Field : TDBField;
  DefaultPart, CharSet, Collate: string;
- Match, TypeMatch: TMatch;
+ Match : TMatch;
+ TypeMatch: TMatch;
+ FieldMatch : TFieldTypeMatch;
  FieldTypeCandidate: string;
 begin
     CharSet := '';
@@ -31,14 +33,12 @@ begin
 
     Field := TDBField.Create;
     Field.TableName := ATableName;
-    // Extrair nome e resto da linha (tipo + atributos)
     Match := TRegEx.Match(AColumnsDefs, '^(\w+)\s+(.+)', [roIgnoreCase]);
     if Match.Success then
     begin
       Field.Name := Match.Groups[1].Value;
       FieldTypeCandidate := Match.Groups[2].Value;
 
-      // Extrair e remover atributos para isolar o tipo real
       if TRegEx.IsMatch(FieldTypeCandidate, '\bCHARACTER\s+SET\s+\w+', [roIgnoreCase]) then
       begin
         Match := TRegEx.Match(FieldTypeCandidate, '\bCHARACTER\s+SET\s+(\w+)', [roIgnoreCase]);
@@ -64,11 +64,12 @@ begin
       end;
 
       // Validar e capturar o tipo exato usando o dicionário
-      TypeMatch := MatchFirebirdType(FieldTypeCandidate);
+
+      TypeMatch := MatchFirebirdType(FieldTypeCandidate).Match;
       if TypeMatch.Success then
-        Field.FieldType := TypeMatch.Value
+        Field.FieldType := FieldMatch.Match.Value
       else
-        Field.FieldType := FieldTypeCandidate; // fallback para valor bruto se não encontrar
+        Field.FieldType := FieldTypeCandidate;
 
       Field.Charset      := CharSet;
       Field.Collate      := Collate;
