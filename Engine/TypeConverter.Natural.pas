@@ -110,11 +110,10 @@ begin
    end
    else begin
        if (FNewField.NotNull = false) and (FOldField.NotNull = true) then begin
-           sql := string.format('ALTER DOMAIN %s DROP NOT NULL',[FOldField.DomainName])+';';
+           sql := string.format('ALTER TABLE %s ALTER %s DROP NOT NULL',[FtableName,FNewField.GetFormatedName])+';';
            script.AppendLine(sql);
        end
        ELSE BEGIN
-
 
            if (FNewField.NotNull <> FOldField.NotNull) or
               (FNewField.DefaultValue <> FOldField.DefaultValue) or
