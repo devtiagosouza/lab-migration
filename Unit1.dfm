@@ -19,9 +19,9 @@ object Form1: TForm1
   object Memo1: TMemo
     Left = 0
     Top = 65
-    Width = 789
-    Height = 264
-    Align = alTop
+    Width = 536
+    Height = 475
+    Align = alClient
     Font.Charset = ANSI_CHARSET
     Font.Color = clWindowText
     Font.Height = -12
@@ -32,6 +32,7 @@ object Form1: TForm1
     ParentFont = False
     ScrollBars = ssBoth
     TabOrder = 0
+    ExplicitWidth = 337
   end
   object Panel1: TPanel
     Left = 0
@@ -60,11 +61,11 @@ object Form1: TForm1
     end
   end
   object Memo2: TMemo
-    Left = 0
-    Top = 329
-    Width = 789
-    Height = 211
-    Align = alClient
+    Left = 536
+    Top = 65
+    Width = 253
+    Height = 475
+    Align = alRight
     Font.Charset = ANSI_CHARSET
     Font.Color = clWindowText
     Font.Height = -12

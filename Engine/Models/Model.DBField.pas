@@ -44,7 +44,7 @@ interface
 
 implementation
 
-  uses Sql.Builder,TypeConverter.Natural, TypeConverter.Interfaces;
+  uses Sql.Builder,TypeConverter.Interfaces;
 
 { TDBField }
 
@@ -94,7 +94,7 @@ begin
 
         if (FFieldType <> Outro.FFieldType) or
                (GetFieldSet <> Outro.GetFieldSet) then begin
-                    converter := TConverterFactory.GetConverter(fTableName, self, outro);
+                    converter := TConverterFactory.GetConverter(fTableName,outro, self);
                     if (converter <> nil) then begin
                          Result := converter.GenerateScript;
 
