@@ -40,7 +40,7 @@ uses
   function MatchDDL(const AText: string) : TDDLMatch;
   function GetPattern(ADDLCommand : TDDLType) : string; overload;
   function GetPattern(AFieldType : TFieldType) : string; overload;
-  function ConversionTypeSupported(FromType,ToType : string) : TTypeConversion;
+  function ConversionTypeSupported(newType,oldType : string) : TTypeConversion;
 
   implementation
 
@@ -89,7 +89,7 @@ begin
 
 end;
 
-function ConversionTypeSupported(FromType,ToType : string) : TTypeConversion;
+function ConversionTypeSupported(newType,oldType : string) : TTypeConversion;
           function FieldTypeInArray(const AValue: TFieldType; const AArray: TFieldTypeArray): Boolean;
           var
             Item: TFieldType;
@@ -105,22 +105,23 @@ function ConversionTypeSupported(FromType,ToType : string) : TTypeConversion;
             end;
           end;
 var
-  FromTypeMatch : TFieldTypeMatch;
-  ToTypeMatch : TFieldTypeMatch;
-  possibleList : TFieldTypeArray;
+  NewTypeMatch : TFieldTypeMatch;  //Modelo
+  OldTypeMatch : TFieldTypeMatch; //Banco MFX
+  supportedTypesList : TFieldTypeArray;
 begin
   Result := conversionIsNotSupported;
 
-  FromTypeMatch := MatchFirebirdType(FromType);
-  ToTypeMatch := MatchFirebirdType(ToType);
+  NewTypeMatch := MatchFirebirdType(NewType);
+  OldTypeMatch := MatchFirebirdType(OldType);
 
-  if (FromTypeMatch.Match.Success) and (ToTypeMatch.Match.Success) then begin
-      if (NaturalTypeConversionMap.TryGetValue(FromTypeMatch.FieldType,possibleList)) then begin
-         if (FieldTypeInArray(FromTypeMatch.FieldType, possibleList)) then
+
+  if (NewTypeMatch.Match.Success) and (OldTypeMatch.Match.Success) then begin
+      if (NaturalTypeConversionMap.TryGetValue(OldTypeMatch.FieldType,supportedTypesList)) then begin
+         if (FieldTypeInArray(NewTypeMatch.FieldType, supportedTypesList)) then
             result := conversionNatural;
       end
-      else if (TypeConversionExportDataMap.TryGetValue(FromTypeMatch.FieldType,possibleList))  then begin
-         if (FieldTypeInArray(FromTypeMatch.FieldType, possibleList)) then
+      else if (TypeConversionExportDataMap.TryGetValue(OldTypeMatch.FieldType,supportedTypesList))  then begin
+         if (FieldTypeInArray(NewTypeMatch.FieldType, supportedTypesList)) then
             result := conversionDataTransfer;
       end;
   end;

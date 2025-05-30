@@ -92,16 +92,17 @@ begin
 
      if (FTableName = outro.TableName) then begin
 
-        if (FFieldType <> Outro.FFieldType) or
-               (GetFieldSet <> Outro.GetFieldSet) then begin
-                    converter := TConverterFactory.GetConverter(fTableName,outro, self);
-                    if (converter <> nil) then begin
-                         Result := converter.GenerateScript;
-
-
-                    end
-                    else Result := DDLAlter;
-               end;
+        if (FFieldType <> outro.FieldType) or
+           (FNotNull <> outro.NotNull) or
+           (FDefaultValue <> outro.DefaultValue) or
+           (FCharset <> outro.Charset) or
+           (FCollate <> Outro.Collate)
+        then begin
+           converter := TConverterFactory.GetConverter(fTableName,self, outro);
+           if (converter <> nil) then begin
+                Result := converter.GenerateScript;
+           end
+        end;
 
      end;
  end;

@@ -15,7 +15,7 @@ Type
   type TConverterFactory = class
 
   public
-     class function GetConverter(aTableName: string; aTypeFrom, aTypeTo : TDBField) : ITypeConverter; static;
+     class function GetConverter(aTableName: string; aNewField, aOldField : TDBField) : ITypeConverter; static;
 
   end;
 
@@ -27,16 +27,18 @@ uses TypeConverter.Natural, typeConverter.FloatToNumeric, Firebird.Types;
 
 { TConverterFactory }
 
-class function TConverterFactory.GetConverter(aTableName: string; aTypeFrom, aTypeTo : TDBField): ITypeConverter;
+class function TConverterFactory.GetConverter(aTableName: string; aNewField, aOldField : TDBField): ITypeConverter;
 var
  typeConversor : TTypeConversion;
 begin
   Result := nil;
-  typeConversor := ConversionTypeSupported(aTypeFrom.FieldType, aTypeTo.FieldType);
-  if (typeConversor = conversionNatural) then
-     Result := TNaturalTypeConverter.Create(aTableName,aTypeFrom,ATypeTo)
-  else if (typeConversor = conversionDataTransfer) then
-     Result := TFloatToNumericConverter.Create(aTableName,aTypeFrom.Name,aTypeFrom.FieldType, aTypeTo.FieldType );
+
+  typeConversor := ConversionTypeSupported(aNewField.FieldType, aOldField.FieldType);
+  if (typeConversor = conversionDataTransfer) then
+     Result := TFloatToNumericConverter.Create(aTableName,aNewField.Name,aNewField.FieldType, aOldField.FieldType )
+  else begin
+      Result := TNaturalTypeConverter.Create(aTableName,aNewField,aOldField);
+  end;
 end;
 
 end.
