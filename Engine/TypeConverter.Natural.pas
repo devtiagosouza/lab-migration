@@ -30,24 +30,24 @@ uses Firebird.Types, Sql.Script.Builder;
 function TNaturalTypeConverter.CanConvertComparingSize(aNewSize,
   aOldSize: string): boolean;
 var
-  sourceSizeInt : Integer;
-  targetSizeInt : Integer;
+  newSizeInt : Integer;
+  oldSizeInt : Integer;
 begin
-  if (integer.TryParse(aNewSize.Trim,sourceSizeInt)) and (integer.TryParse(aOldSize.Trim, targetSizeInt)) then begin
-     result :=  targetSizeInt > sourceSizeInt;
+  if (integer.TryParse(aNewSize.Trim,newSizeInt)) and (integer.TryParse(aOldSize.Trim, oldSizeInt)) then begin
+     result :=  newSizeInt > oldSizeInt;
   end;
 end;
 
 function TNaturalTypeConverter.CanConvertComparingSizeAndScale(
  aNewSize, aNewScale, aOldSize, aOldScale : string): boolean;
 var
-  sourceSizeInt,sourceScaleInt : Integer;
-  targetSizeInt, targetScaleInt : Integer;
+  newSizeInt,newScaleInt : Integer;
+  oldSizeInt, oldScaleInt : Integer;
 begin
-  if integer.TryParse(aNewSize.Trim,sourceSizeInt) and integer.TryParse(aNewScale.Trim, sourceScaleInt) and
-     integer.TryParse(aOldSize.Trim,targetSizeInt) and integer.TryParse(aOldScale.Trim, targetScaleInt)
+  if integer.TryParse(aNewSize.Trim,newSizeInt) and integer.TryParse(aNewScale.Trim, newScaleInt) and
+     integer.TryParse(aOldSize.Trim,oldSizeInt) and integer.TryParse(aOldScale.Trim, oldScaleInt)
   then begin
-     result :=  (targetSizeInt > sourceSizeInt) or (targetScaleInt > sourceScaleInt);
+     result :=  (newSizeInt > oldSizeInt) or (newScaleInt > oldScaleInt);
   end;
 end;
 
@@ -75,6 +75,7 @@ newTypeMatch,oldTypeMatch : TFieldTypeMatch;
 script : IScriptBuilder;
 sizeStr : string;
 sql : string;
+newCharset : string;
 begin
    script := TScriptBuilder.Create;
    sql := '';
@@ -107,32 +108,36 @@ begin
           AppendSql(script);
        end;
 
+   end;
+
+   if (FNewField.NotNull) AND (FOldField.NotNull = false) then begin
+     sql := string.format('ALTER TABLE %s ALTER %s SET NOT NULL',[FtableName,FNewField.GetFormatedName])+';';
+     script.AppendLine(sql);
    end
-   else begin
-       if (FNewField.NotNull = false) and (FOldField.NotNull = true) then begin
-           sql := string.format('ALTER TABLE %s ALTER %s DROP NOT NULL',[FtableName,FNewField.GetFormatedName])+';';
-           script.AppendLine(sql);
-       end
-       ELSE BEGIN
+   else if (FNewField.NotNull = false) and (FOldField.NotNull = true) then begin
+     sql := string.format('ALTER TABLE %s ALTER %s DROP NOT NULL',[FtableName,FNewField.GetFormatedName])+';';
+     script.AppendLine(sql);
+   end;
 
-           if (FNewField.NotNull <> FOldField.NotNull) or
-              (FNewField.DefaultValue <> FOldField.DefaultValue) or
-              (FNewField.Charset <> FOldField.Charset) or
-              (FNewField.Collate <> FOldField.Collate)
-           then begin
-               sql := string.format('ALTER DOMAIN %s TYPE %s',[FOldField.DomainName, FNewField.FieldType+FNewField.GetFieldSet])+';';
-               script.AppendLine(sql);
-           end;
+   if (FNewField.DefaultValue.Trim <> FOldField.DefaultValue.Trim) then begin
+     sql := string.format('ALTER TABLE %s ALTER COLUMN %s SET DEFAULT %s',[FtableName,FNewField.GetFormatedName, FNewField.DefaultValue])+';';
 
-       END;
+     if ( FNewField.DefaultValue.Trim = '') and (FOldField.DefaultValue.Trim <> '') then begin
+        sql := string.format('ALTER TABLE %s ALTER COLUMN % DROP DEFAULT',[FtableName,FNewField.GetFormatedName])+';';
+     end;
+
+     script.AppendLine(sql);
 
    end;
 
+   if (FNewField.Charset <> FOldField.Charset) then begin
+       newCharset := FNewField.Charset.Trim;
+       if (newCharset = '') then
+           newCharset := 'NONE';
 
-
-//   if (sql <> '') then
-//     script.AppendLine(sql)
-//         .Append(' /*').Append('tabela: '+FTableName).Append('*/');
+      sql := string.format('ALTER DOMAIN %s TYPE %s CHARACTER SET %s',[FOldField.DomainName, FNewField.FieldType, newCharset])+';';
+      script.AppendLine(sql);
+   end;
 
    result := script.AsString;
 end;
