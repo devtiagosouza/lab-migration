@@ -119,8 +119,10 @@ begin
       if (NaturalTypeConversionMap.TryGetValue(OldTypeMatch.FieldType,supportedTypesList)) then begin
          if (FieldTypeInArray(NewTypeMatch.FieldType, supportedTypesList)) then
             result := conversionNatural;
-      end
-      else if (TypeConversionExportDataMap.TryGetValue(OldTypeMatch.FieldType,supportedTypesList))  then begin
+      end;
+
+
+      if (result = conversionIsNotSupported) and (TypeConversionExportDataMap.TryGetValue(OldTypeMatch.FieldType,supportedTypesList))  then begin
          if (FieldTypeInArray(NewTypeMatch.FieldType, supportedTypesList)) then
             result := conversionDataTransfer;
       end;

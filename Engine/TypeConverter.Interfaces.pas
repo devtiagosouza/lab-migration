@@ -35,7 +35,7 @@ begin
 
   typeConversor := ConversionTypeSupported(aNewField.FieldType, aOldField.FieldType);
   if (typeConversor = conversionDataTransfer) then
-     Result := TFloatToNumericConverter.Create(aTableName,aNewField.Name,aNewField.FieldType, aOldField.FieldType )
+     Result := TFloatToNumericConverter.Create(aTableName,aNewField, aOldField )
   else begin
       Result := TNaturalTypeConverter.Create(aTableName,aNewField,aOldField);
   end;

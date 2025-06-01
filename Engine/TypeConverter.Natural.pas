@@ -69,11 +69,8 @@ function TNaturalTypeConverter.GenerateScript: string;
                              end;
 
 var
-patternFrom : string;
-patternTo : string;
 newTypeMatch,oldTypeMatch : TFieldTypeMatch;
 script : IScriptBuilder;
-sizeStr : string;
 sql : string;
 newCharset : string;
 begin

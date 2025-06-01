@@ -90,6 +90,7 @@ begin
  if (isSameObject(Obj)) then begin
      Outro := TDBField(Obj);
 
+
      if (FTableName = outro.TableName) then begin
 
         if (FFieldType <> outro.FieldType) or
