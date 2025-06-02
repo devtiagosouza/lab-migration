@@ -38,7 +38,7 @@ implementation
 
 {$R *.dfm}
 
-uses SqlResources;
+uses SqlResources, Migration.Tabelas;
 
 procedure TForm1.Button1Click(Sender: TObject);
 var tempo: string;
@@ -60,6 +60,7 @@ begin
  lbTempo.Caption := '';
 
   MegaMigrator := TMegaMigration.Create('localhost:C:\MFX\DADOS\TESTE_MIGRACAO\MFX.FDB');
+  MegaMigrator.AddMigration(TMigrationTabelas.Create);
 end;
 
 end.

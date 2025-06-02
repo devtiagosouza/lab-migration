@@ -34,7 +34,7 @@ uses
   Parser.Triggers in 'Engine\Parsers\Parser.Triggers.pas',
   DelphiUnitWriter in 'Engine\DelphiUnitWriter.pas',
   Migration.ClassWriter in 'Migration.ClassWriter.pas',
-  TaskTimer in 'TaskTimer.pas',
+  TaskTimer in 'TaskTimer.pas' {$R *.res},
   MegaMigrator in 'DatabaseMigrator\MegaMigrator.pas',
   Database.Interfaces in 'DatabaseMigrator\Database.Interfaces.pas',
   Database in 'DatabaseMigrator\Database.pas',
@@ -43,7 +43,10 @@ uses
   WaitScreen in 'WaitForm\WaitScreen.pas',
   TypeConverter.Interfaces in 'Engine\TypeConverter.Interfaces.pas',
   TypeConverter.FloatToNumeric in 'Engine\TypeConverter.FloatToNumeric.pas',
-  TypeConverter.Natural in 'Engine\TypeConverter.Natural.pas';
+  TypeConverter.Natural in 'Engine\TypeConverter.Natural.pas',
+  Migration.Tabelas in '_migrations\Migration.Tabelas.pas',
+  Table.Builder in 'Engine\Builders\Table.Builder.pas',
+  Field.Builder in 'Engine\Builders\Field.Builder.pas';
 
 {$R *.res}
 

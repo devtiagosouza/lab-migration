@@ -29,14 +29,9 @@ uses
 
   type TTypeConversion = (conversionIsNotSupported, conversionNatural, conversionDataTransfer);
 
-
-
   procedure InitializeFirebirdTypes;
   function IsValidFirebirdType(const FieldType: string): Boolean;
   function MatchFirebirdType(const Text: string) : TFieldTypeMatch;
-
-//  function MatchFirebirdType(const Text: string): TMatch;
-
   function MatchDDL(const AText: string) : TDDLMatch;
   function GetPattern(ADDLCommand : TDDLType) : string; overload;
   function GetPattern(AFieldType : TFieldType) : string; overload;
@@ -105,8 +100,8 @@ function ConversionTypeSupported(newType,oldType : string) : TTypeConversion;
             end;
           end;
 var
-  NewTypeMatch : TFieldTypeMatch;  //Modelo
-  OldTypeMatch : TFieldTypeMatch; //Banco MFX
+  NewTypeMatch : TFieldTypeMatch;
+  OldTypeMatch : TFieldTypeMatch;
   supportedTypesList : TFieldTypeArray;
 begin
   Result := conversionIsNotSupported;
@@ -268,24 +263,7 @@ begin
   end;
 end;
 
-//function MatchFirebirdType(const Text: string): TMatch;
-//var
-//  Pair: TPair<string, string>;
-//  Regex: TRegEx;
-//  M: TMatch;
-//begin
-//  Result := Default(TMatch);
-//  for Pair in FirebirdTypes do
-//  begin
-//    Regex := TRegEx.Create(Pair.Value, [roIgnoreCase]);
-//    M := Regex.Match(Text);
-//    if M.Success then
-//    begin
-//      Result := M;
-//      Exit;
-//    end;
-//  end;
-//end;
+
 
 
 function IsValidFirebirdType(const FieldType: string): Boolean;

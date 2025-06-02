@@ -10,13 +10,74 @@ type
   private
     class function SplitColumns(const ColumnsSection: string): TArray<string>;
   public
-    class function ParseField(const AColumnsDefs, ATableName: string): TDBField;
+    class function ParseField(const AColumnsDefs, ATableName: string): TDBField;  overload;
+    class function ParseField(const Definition: string) : TDBField; overload;
+
     class function Parse(const AColumnsSection, ATableName: string) : TList<TDBField>;
   end;
 
 implementation
 
 { TFieldParser }
+
+class function TFieldParser.ParseField(const Definition: string): TDBField;
+const
+ // REGEX_PATTERN = '(?i)(VARCHAR\(\d+(?:,\d+)?\)|\w+(?:\(\d+(?:,\d+)?\))?|BLOB|SUB_TYPE\s+\w+|SEGMENT\s+SIZE\s+\d+|CHARACTER\s+SET\s+\w+|COLLATE\s+\w+|DEFAULT\s+(?:''''[^'']*''''|\S+)|NOT\s+NULL|NULL|CHECK\s*\([^\)]+\)|PRIMARY\s+KEY|UNIQUE|REFERENCES\s+\w+)';
+REGEX_PATTERN =
+    '(?i)(VARCHAR\(\d+(?:,\d+)?\)|BLOB|SUB_TYPE\s+\w+|SEGMENT\s+SIZE\s+\d+|' +
+    'CHARACTER\s+SET\s+\w+|COLLATE\s+\w+|DEFAULT\s+(?:''''[^'']*''''|\S+)|NOT\s+NULL|NULL|' +
+    'CHECK\s*\([^\)]+\)|PRIMARY\s+KEY|UNIQUE|REFERENCES\s+\w+|\w+(?:\(\d+(?:,\d+)?\))?)';
+
+var
+  Matches: TMatchCollection;
+  Match: TMatch;
+  FieldTypeSet: Boolean;
+  Field: TDBField;
+  Token: string;
+  RawDefault: string;
+begin
+ Field := TDBField.Create;
+  FieldTypeSet := False;
+
+  Matches := TRegEx.Matches(Definition, REGEX_PATTERN);
+
+  for Match in Matches do
+  begin
+    Token := Trim(Match.Value.ToUpper);
+
+    if not FieldTypeSet then
+    begin
+      Field.FieldType := Match.Value; // original case
+      FieldTypeSet := True;
+    end
+    else if Token.StartsWith('DEFAULT') then
+    begin
+      RawDefault := Trim(Copy(Match.Value, 9, MaxInt));
+       // Remove aspas duplas externas se existirem (ex: ''TESTE'')
+      if RawDefault.StartsWith('''') and RawDefault.EndsWith('''') then
+        RawDefault := Copy(RawDefault, 2, Length(RawDefault) - 2);
+
+      // Substitui aspas duplicadas internas por aspas simples normais
+      RawDefault := StringReplace(RawDefault, '''''', '''', [rfReplaceAll]);
+
+      Field.DefaultValue := RawDefault;
+
+     // Field.DefaultValue := Trim(Copy(Match.Value, 9, MaxInt)); // remove "DEFAULT "
+
+
+
+    end
+    else if Token = 'NOT NULL' then
+      Field.NotNull := True
+    else if Token.StartsWith('CHARACTER SET') then
+      Field.Charset := Copy(Match.Value, Length('CHARACTER SET ') + 1, MaxInt)
+    else if Token.StartsWith('COLLATE') then
+      Field.Collate := Copy(Match.Value, Length('COLLATE ') + 1, MaxInt);
+  end;
+
+  Result := Field;
+
+end;
 
 class function TFieldParser.ParseField(const AColumnsDefs, ATableName: string): TDBField;
 var

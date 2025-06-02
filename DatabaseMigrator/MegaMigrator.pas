@@ -4,7 +4,8 @@ interface
 
  uses System.classes,FireDAC.Comp.Client,Model.DBView,  System.SysUtils, Database, Database.Interfaces, ClipBrd,
  Model.DBTable,Model.DBProcedure, Model.DBGenerator, Model.DBFunction,System.IOUtils,Migration.ClassWriter, 
- Model.DBObject,Model.DBTrigger, DCollections, IWSystem,SqlResources,FireDAC.Stan.Option, Sql.Script.Builder;
+ Model.DBObject,Model.DBTrigger, DCollections, IWSystem,SqlResources,FireDAC.Stan.Option, Sql.Script.Builder,
+ System.Rtti, System.TypInfo,Migration;
 
  const CLASS_PATH = 'C:\Fontes\Labs\lab-migration\_migrations';
 
@@ -15,8 +16,12 @@ interface
 
    TargetConnection : TFDConnection;
    ModelConnection : TFDConnection;
+
    TargetDatabase : IDatabase;
    ModelDatabase : IDatabase;
+
+   FMigrations : TList<TMigration>;
+
 
    function CreateConnection(ADatabasePath : string) : TFDConnection;
    function CreateModelConnection() : TFDConnection;
@@ -25,10 +30,14 @@ interface
    procedure AddEqualityScriptTable(AScript : IScriptBuilder; AModelList, ATargetList : TList<TDBTable>);
 
 
+
+
  public
     procedure Migrate;
     function GenerateScript : string;
     procedure SaveClasses;
+
+    procedure AddMigration(aMigration : TMigration);
 
     constructor Create(ADatabasePath : string);
  end;
@@ -37,7 +46,6 @@ interface
 implementation
 
 { TMegaMigration }
-
 
 
 constructor TMegaMigration.Create(ADatabasePath : string);
@@ -49,6 +57,8 @@ begin
    
    TargetDatabase := TDatabase.Create(TargetConnection);
    ModelDatabase := TDatabase.Create(ModelConnection);
+
+   FMigrations := TList<TMigration>.Create;
 end;
 
 function TMegaMigration.CreateConnection(ADatabasePath: string): TFDConnection;
@@ -107,6 +117,9 @@ try
     ModelDatabase.LoadMetadata;
 
 
+
+
+
     AddEqualityScriptTable(script, ModelDatabase.GetTables, TargetDatabase.GetTables);
     AddEqualityScript<TDBView>(script, ModelDatabase.GetViews, TargetDatabase.GetViews);
     AddEqualityScript<TDBProcedure>(script, ModelDatabase.GetProcedures, TargetDatabase.GetProcedures);
@@ -122,6 +135,7 @@ finally
 end;
 
 end;
+
 
 
 procedure TMegaMigration.AddEqualityScriptTable(AScript: IScriptBuilder;
@@ -147,6 +161,11 @@ begin
     end;
 end;
 
+
+procedure TMegaMigration.AddMigration(aMigration: TMigration);
+begin
+
+end;
 
 procedure TMegaMigration.AddEqualityScript<T>(AScript : IScriptBuilder; AModelList,
   ATargetList: TList<T>);

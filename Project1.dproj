@@ -144,6 +144,9 @@
         <DCCReference Include="Engine\TypeConverter.Interfaces.pas"/>
         <DCCReference Include="Engine\TypeConverter.FloatToNumeric.pas"/>
         <DCCReference Include="Engine\TypeConverter.Natural.pas"/>
+        <DCCReference Include="_migrations\Migration.Tabelas.pas"/>
+        <DCCReference Include="Engine\Builders\Table.Builder.pas"/>
+        <DCCReference Include="Engine\Builders\Field.Builder.pas"/>
         <RcItem Include="Engine\Resources\QUERY_TABLES_AND_VIEWS.sql">
             <ContainerId>ResourceItem</ContainerId>
             <ResourceType>RCDATA</ResourceType>

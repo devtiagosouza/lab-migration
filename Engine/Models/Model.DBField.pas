@@ -1,7 +1,7 @@
 unit Model.DBField;
 
 interface
-  uses Model.DBObject, system.SysUtils;
+  uses Model.DBObject, system.SysUtils, DCollections;
 
  type TDBField = class(TDBObject)
 
@@ -38,6 +38,7 @@ interface
    constructor Create();
 
  end;
+
 
 
 
@@ -145,9 +146,6 @@ begin
 
    Result:= Trim(vName+' '+FieldType+GetFieldSet);
 end;
-
-
-
 
 
 end.
