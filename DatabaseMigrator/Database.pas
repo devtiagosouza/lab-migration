@@ -152,27 +152,91 @@ begin
 end;
 
 procedure TDatabase.AddOrSetIndex(obj: TDBIndex);
+var
+  index : integer;
 begin
+    index := FIndices.IndexOf(function( o : TDBIndex) : Boolean
+    begin
+        Result := (o.Name = obj.Name);
+    end);
+
+    if (index > -1) then begin
+        FIndices[index] := obj;
+    end
+    else begin
+        FIndices.Add(obj);
+    end;
 
 end;
 
 procedure TDatabase.AddOrSetProcedure(obj: TDBProcedure);
+var
+  index : integer;
 begin
+    index := FProcedures.IndexOf(function( o : TDBProcedure) : Boolean
+    begin
+        Result := (o.Name = obj.Name);
+    end);
+
+    if (index > -1) then begin
+        FProcedures[index] := obj;
+    end
+    else begin
+        FProcedures.Add(obj);
+    end;
 
 end;
 
 procedure TDatabase.AddOrSetTable(obj: TDBTable);
+var
+  index : integer;
 begin
+    index := FTables.IndexOf(function( o : TDBTable) : Boolean
+    begin
+        Result := (o.Name = obj.Name);
+    end);
+
+    if (index > -1) then begin
+        FTables[index] := obj;
+    end
+    else begin
+        FTables.Add(obj);
+    end;
 
 end;
 
 procedure TDatabase.AddOrSetTrigger(obj: TDBTrigger);
+var
+  index : integer;
 begin
+    index := FTriggers.IndexOf(function( o : TDBTrigger) : Boolean
+    begin
+        Result := (o.Name = obj.Name);
+    end);
 
+    if (index > -1) then begin
+        FTriggers[index] := obj;
+    end
+    else begin
+        FTriggers.Add(obj);
+    end;
 end;
 
 procedure TDatabase.AddOrSetView(obj: TDBView);
+var
+  index : integer;
 begin
+    index := FViews.IndexOf(function( o : TDBView) : Boolean
+    begin
+        Result := (o.Name = obj.Name);
+    end);
+
+    if (index > -1) then begin
+        FViews[index] := obj;
+    end
+    else begin
+        FViews.Add(obj);
+    end;
 
 end;
 

@@ -50,19 +50,22 @@ function TMigration.Table(aName : string): ITableBuilder;
 var
  vTable : TDBTable;
 begin
+
   vTable := FDatabaseModel.GetTables.First(function(T : TDBTable) : boolean
   begin
      Result := T.Name = aName;
   end);
 
+
   if (vTable = nil) then begin
-    result := TTableBuilder.Create()
-              .New(aName);
-  end
-  else begin
-    result := TTableBuilder.Create
-              .SetTable(vTable);
+    vTable := TDBTable.Create;
+    vTable.Name := aName;
   end;
+
+  FDatabaseModel.AddOrSetTable(vTable);
+  Result := TTableBuilder.Create
+              .SetTable(vTable);
+
 end;
 
 end.
