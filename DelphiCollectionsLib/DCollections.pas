@@ -6,6 +6,7 @@ interface
   System.Generics.Collections, System.SysUtils, System.Rtti,System.Generics.Defaults;
 
 
+
   type
   TList<T> = class(System.Generics.Collections.TList<T>)
   private
@@ -13,6 +14,7 @@ interface
 
   public
     function Where(Predicate: TFunc<T, Boolean>): TList<T>;
+    function IndexOf(const Predicate: TFunc<T, Boolean>): Integer;
     function Exists(Predicate: TFunc<T, Boolean>) : Boolean;
     function First(Predicate: TFunc<T, Boolean>) : T;
     function OrderBy(const FieldName: string; Ascending: Boolean = true): TList<T>;
@@ -57,6 +59,16 @@ begin
 
 end;
 
+
+function TList<T>.IndexOf(const Predicate: TFunc<T, Boolean>): Integer;
+var
+  I: Integer;
+begin
+  for I := 0 to Self.Count - 1 do
+    if Predicate(Self[I]) then
+      Exit(I);
+  Result := -1;
+end;
 
 function TList<T>.OrderBy(const FieldName: string; Ascending: Boolean): TList<T>;
 var

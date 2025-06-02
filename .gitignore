@@ -65,7 +65,6 @@ Project1.identcache~master
 # Delphi history and backups
 __history/
 __recovery/
-_migrations/
 *.~*
 
 # Castalia statistics file (since XE7 Castalia is distributed with Delphi)

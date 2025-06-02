@@ -67,6 +67,15 @@ public
 
     procedure LoadMetadata();
 
+    procedure AddOrSetTable(obj : TDBTable);
+    procedure AddOrSetField(obj: TDBField);
+    procedure AddOrSetView(obj : TDBView);
+    procedure AddOrSetProcedure(obj : TDBProcedure);
+    procedure AddOrSetFunction(obj : TDBFunction);
+    procedure AddOrSetTrigger(obj : TDBTrigger);
+    procedure AddOrSetGenerator(obj : TDBGenerator);
+    procedure AddOrSetIndex(obj : TDBIndex);
+
 
 
     constructor Create(AConnection : TFDConnection);
@@ -77,6 +86,95 @@ end;
 implementation
 
 { TDatabase }
+
+procedure TDatabase.AddOrSetField(obj: TDBField);
+var
+  tableIndex : integer;
+  fieldIndex : integer;
+  table : TDBField;
+begin
+ tableIndex := FTables.IndexOf(function(o : TDBTable) : Boolean
+    begin
+        Result := (o.Name = obj.Name);
+    end
+  );
+
+  if (tableIndex > -1) then begin
+    fieldIndex := FTables[tableIndex].Fields.IndexOf(function( o : TDBField) : Boolean
+    begin
+        Result := (o.Name = obj.Name);
+    end);
+
+    if (fieldIndex > -1) then begin
+        FTables[tableIndex].Fields[fieldIndex] := obj;
+    end
+    else begin
+         FTables[tableIndex].Fields.Add(obj);
+    end;
+
+  end;
+
+end;
+
+procedure TDatabase.AddOrSetFunction(obj: TDBFunction);
+var
+  index : integer;
+begin
+    index := FFunctions.IndexOf(function( o : TDBFunction) : Boolean
+    begin
+        Result := (o.Name = obj.Name);
+    end);
+
+    if (index > -1) then begin
+        FFunctions[index] := obj;
+    end
+    else begin
+        FFunctions.Add(obj);
+    end;
+end;
+
+procedure TDatabase.AddOrSetGenerator(obj: TDBGenerator);
+var
+  index : integer;
+begin
+    index := FGenerators.IndexOf(function( o : TDBGenerator) : Boolean
+    begin
+        Result := (o.Name = obj.Name);
+    end);
+
+    if (index > -1) then begin
+        FGenerators[index] := obj;
+    end
+    else begin
+        FGenerators.Add(obj);
+    end;
+
+end;
+
+procedure TDatabase.AddOrSetIndex(obj: TDBIndex);
+begin
+
+end;
+
+procedure TDatabase.AddOrSetProcedure(obj: TDBProcedure);
+begin
+
+end;
+
+procedure TDatabase.AddOrSetTable(obj: TDBTable);
+begin
+
+end;
+
+procedure TDatabase.AddOrSetTrigger(obj: TDBTrigger);
+begin
+
+end;
+
+procedure TDatabase.AddOrSetView(obj: TDBView);
+begin
+
+end;
 
 constructor TDatabase.Create(AConnection : TFDConnection);
 begin

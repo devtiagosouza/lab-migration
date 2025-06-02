@@ -44,9 +44,9 @@ uses
   TypeConverter.Interfaces in 'Engine\TypeConverter.Interfaces.pas',
   TypeConverter.FloatToNumeric in 'Engine\TypeConverter.FloatToNumeric.pas',
   TypeConverter.Natural in 'Engine\TypeConverter.Natural.pas',
-  Migration.Tabelas in '_migrations\Migration.Tabelas.pas',
   Table.Builder in 'Engine\Builders\Table.Builder.pas',
-  Field.Builder in 'Engine\Builders\Field.Builder.pas';
+  Field.Builder in 'Engine\Builders\Field.Builder.pas',
+  Migration.Tabelas in '_migrations\Migration.Tabelas.pas';
 
 {$R *.res}
 

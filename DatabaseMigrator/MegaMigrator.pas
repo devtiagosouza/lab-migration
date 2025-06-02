@@ -108,6 +108,7 @@ end;
 function TMegaMigration.GenerateScript: string;
 var
   script : IScriptBuilder;
+  i : integer;
 begin
 try
   try
@@ -116,7 +117,10 @@ try
     TargetDatabase.LoadMetadata;
     ModelDatabase.LoadMetadata;
 
-
+    for I := 0 to FMigrations.Count - 1 do begin
+       FMigrations[i].SetDatabaseModel(ModelDatabase);
+       FMigrations[i].CreateMigrations;
+    end;
 
 
 
@@ -162,9 +166,11 @@ begin
 end;
 
 
+
+
 procedure TMegaMigration.AddMigration(aMigration: TMigration);
 begin
-
+ FMigrations.Add(aMigration);
 end;
 
 procedure TMegaMigration.AddEqualityScript<T>(AScript : IScriptBuilder; AModelList,
