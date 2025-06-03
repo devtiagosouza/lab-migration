@@ -4,20 +4,20 @@ interface
 
 uses  System.Classes,System.SysUtils, Model.DBObject,Splitters, Sql.Script.Builder,DCollections,
   Model.DBTable, Model.DBTrigger, Model.DBIndex, Model.DBView, Model.DBProcedure,Model.DBFunction,
-  Model.DBGenerator,Table.Builder, Database.Interfaces ;
+  Model.DBGenerator,Table.Builder;
 
 type TMigration = class
 
 private
-    FDatabaseModel : IDatabase;
     FScripts: IScriptBuilder;
 
 protected
+  FTables : TList<TDBTable>;
+
   property Scripts : IScriptBuilder read FScripts;
   function Table(aName: string) : ITableBuilder;
 
 public
-  procedure SetDatabaseModel(ADatabase: IDatabase);
 
   constructor Create();
 
@@ -33,6 +33,7 @@ implementation
 constructor TMigration.Create();
 begin
     FScripts := TScriptBuilder.Create;
+    FTables := TList<TDBTable>.Create;
 end;
 
 
@@ -41,28 +42,28 @@ begin
   raise Exception.Create('Sobrescreva o método CreateMigrations');
 end;
 
-procedure TMigration.SetDatabaseModel(ADatabase: IDatabase);
-begin
-  FDatabaseModel := ADatabase;
-end;
+
 
 function TMigration.Table(aName : string): ITableBuilder;
 var
  vTable : TDBTable;
+ index : integer;
 begin
 
-  vTable := FDatabaseModel.GetTables.First(function(T : TDBTable) : boolean
+  index := FTables.IndexOf(function(T : TDBTable) : boolean
   begin
      Result := T.Name = aName;
   end);
 
-
-  if (vTable = nil) then begin
+  if (index = -1) then begin
     vTable := TDBTable.Create;
     vTable.Name := aName;
+    FTables.Add(vTable);
+  end
+  else begin
+    vTable := FTables[index];
   end;
 
-  FDatabaseModel.AddOrSetTable(vTable);
   Result := TTableBuilder.Create
               .SetTable(vTable);
 

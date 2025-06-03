@@ -3,7 +3,7 @@ unit Database.Interfaces;
 interface
 
 uses DCollections, Model.DBTable, Model.DBView, Model.DBProcedure,Model.DBFunction, Model.DBTrigger,
-    Model.DBGenerator, Model.DBIndex, Model.DBField;
+    Model.DBGenerator, Model.DBIndex, Model.DBField, Migration;
 
 type IDatabase = interface
    ['{BEB0C102-2A32-42D0-94EA-FDA1F12E9FCF}']
@@ -17,6 +17,10 @@ type IDatabase = interface
     function GetGenerators: TList<TDBGenerator>;
     function GetAllGenerators: TList<TDBGenerator>;
     function GetIndices: TList<TDBIndex>;
+
+
+    procedure AddIncrementalMigration(aMigration : TMigration);
+
 
     procedure AddOrSetTable(obj : TDBTable);
     procedure AddOrSetField(obj: TDBField);

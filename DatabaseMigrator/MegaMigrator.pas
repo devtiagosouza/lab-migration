@@ -115,13 +115,12 @@ try
     script := TScriptBuilder.Create;
 
     TargetDatabase.LoadMetadata;
-    ModelDatabase.LoadMetadata;
 
     for I := 0 to FMigrations.Count - 1 do begin
-       FMigrations[i].SetDatabaseModel(ModelDatabase);
-       FMigrations[i].CreateMigrations;
+       ModelDatabase.AddIncrementalMigration(FMigrations[i]);
     end;
 
+    ModelDatabase.LoadMetadata;
 
 
     AddEqualityScriptTable(script, ModelDatabase.GetTables, TargetDatabase.GetTables);

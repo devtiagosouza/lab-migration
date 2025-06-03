@@ -3,7 +3,7 @@ unit Database;
 interface
   uses Model.DBObject, Model.DBTable, Model.DBField, Model.DBView, Model.DBProcedure, Model.DBFunction, Model.DBTrigger,
   Model.DBGenerator,Model.DBIndex, System.Classes,FireDAC.Comp.Client,SqlResources,
-  System.SysUtils, DCollections, Database.Interfaces,FireDAC.Stan.Option,DebugFilter;
+  System.SysUtils, DCollections, Database.Interfaces,FireDAC.Stan.Option,DebugFilter, Migration;
 
 
 type TDatabase = class(TInterfacedObject, IDatabase)
@@ -31,7 +31,7 @@ private
     FGenerators: TList<TDBGenerator>;
     FIndices: TList<TDBIndex>;
 
-
+    FAditionalMigrations: TList<TMigration>;
 
 
     procedure LoadTablesAndViews(aWhere : string = '');
@@ -67,6 +67,8 @@ public
 
     procedure LoadMetadata();
 
+    procedure AddIncrementalMigration(aMigration : TMigration);
+
     procedure AddOrSetTable(obj : TDBTable);
     procedure AddOrSetField(obj: TDBField);
     procedure AddOrSetView(obj : TDBView);
@@ -86,6 +88,11 @@ end;
 implementation
 
 { TDatabase }
+
+procedure TDatabase.AddIncrementalMigration(aMigration: TMigration);
+begin
+
+end;
 
 procedure TDatabase.AddOrSetField(obj: TDBField);
 var
@@ -255,6 +262,7 @@ begin
    FQueryFunctions := CreateQuery;
    FQueryFields := CreateQuery;
 
+   FAditionalMigrations := TList<TMigration>.Create;
 end;
 
 function TDatabase.CreateQuery: TFDQuery;
@@ -604,6 +612,8 @@ begin
 end;
 
 procedure TDatabase.LoadMetadata;
+var
+ i : integer;
 begin
 try
    try
@@ -614,6 +624,11 @@ try
        LoadFunctions;
        LoadGeneratorsWithoutDependencies;
        LoadGenerators;
+
+       for I := 0 to FAditionalMigrations.Count - 1 do begin
+           FAditionalMigrations[i].CreateMigrations;
+       end;
+
    except
        raise;
    end;
