@@ -24,7 +24,7 @@ public
 
    function EqualityScript(Obj: TDBObject; args : array of TObject) : string; override;
 
-   constructor Create();
+   constructor Create(AName : string);
 
 end;
 
@@ -56,7 +56,7 @@ public
 
     function EqualityScript(Obj: TDBObject; args : array of TObject) : string; override;
 
-     constructor Create();
+     constructor Create(AName: string);
 
 end;
 
@@ -76,7 +76,7 @@ public
 
     function EqualityScript(Obj: TDBObject; args : array of TObject) : string; override;
 
-    constructor Create();
+    constructor Create(AName: string);
 end;
 
 
@@ -99,7 +99,7 @@ public
 
     function EqualityScript(Obj: TDBObject; args : array of TObject) : string; override;
 
-    constructor Create();
+    constructor Create(AName : string);
 end;
 
 
@@ -127,7 +127,7 @@ public
     property Active : boolean read FActive write FActive;
     property Sorting : string read FSorting write FSorting;
 
-    constructor Create();
+    constructor Create(AName : string);
 
     function DDLCreate: string; override;
     function DDLDrop: string; override;
@@ -140,9 +140,9 @@ implementation
 
 { TDBIndex }
 
-constructor TDBIndex.Create();
+constructor TDBIndex.Create(AName : string);
 begin
-  inherited Create;
+  inherited Create(AName);
   ObjectTypeFriendlyName := 'Indice';
 end;
 
@@ -183,9 +183,9 @@ end;
 
 { TDBPrimaryKey }
 
-constructor TDBPrimaryKey.Create();
+constructor TDBPrimaryKey.Create(AName : string);
 begin
-  inherited;
+  inherited Create(AName);
   ObjectTypeFriendlyName := 'Contraint';
 end;
 
@@ -220,9 +220,9 @@ end;
 
 { TDBUnique }
 
-constructor TDBUnique.Create();
+constructor TDBUnique.Create(AName : string);
 begin
-  inherited Create;
+  inherited Create(AName);
   ObjectTypeFriendlyName := 'ConstraintUnique';
 
 end;
@@ -256,9 +256,9 @@ end;
 
 { TDBForeignKey }
 
-constructor TDBForeignKey.Create;
+constructor TDBForeignKey.Create(AName: string);
 begin
-  inherited Create;
+  inherited Create(AName);
   ObjectTypeFriendlyName := 'Constraint';
 end;
 
@@ -290,9 +290,9 @@ end;
 
 { TDBCheck }
 
-constructor TDBCheck.Create();
+constructor TDBCheck.Create(AName: string);
 begin
-  inherited Create;
+  inherited Create(AName);
   ObjectTypeFriendlyName := 'Constraint';
 end;
 

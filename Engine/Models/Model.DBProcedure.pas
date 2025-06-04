@@ -21,7 +21,7 @@ interface
 
      function EqualityScript(Obj: TDBObject; args : array of TObject) : string; override;
 
-     constructor Create();
+     constructor Create(AName : string);
   end;
 
 
@@ -29,8 +29,9 @@ implementation
 
 { TDBProcedure }
 
-constructor TDBProcedure.Create();
+constructor TDBProcedure.Create(AName : string);
 begin
+  inherited Create(AName);
   InputFields := TList<TDBField>.Create;
   OutputFields := TList<TDBField>.Create;
 

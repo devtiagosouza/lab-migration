@@ -55,6 +55,8 @@ private
 
     function CreateQuery : TFDQuery;
 
+    procedure LoadIncrementalMigrations;
+
 public
     function GetTables: TList<TDBTable>;
     function GetViews: TList<TDBView>;
@@ -91,7 +93,7 @@ implementation
 
 procedure TDatabase.AddIncrementalMigration(aMigration: TMigration);
 begin
-
+   FAditionalMigrations.Add(aMigration);
 end;
 
 procedure TDatabase.AddOrSetField(obj: TDBField);
@@ -293,9 +295,8 @@ begin
   FQueryCheck.Open(sql,[aTableName]);
   while not FQueryCheck.Eof do
   begin
-     vCheck := TDBCheck.Create;
+     vCheck := TDBCheck.Create(FQueryCheck.FieldByName('CHECK_NAME').AsString);
      vCheck.TableName :=  aTableName.ToUpper();
-     vCheck.Name :=  FQueryCheck.FieldByName('CHECK_NAME').AsString;
      vCheck.Source :=  FQueryCheck.FieldByName('CHECK_SOURCE').AsString;
 
      Result.Add(vCheck);
@@ -355,10 +356,8 @@ begin
       while not query.Eof do
       begin
 
-        vField := TDBField.Create;
+        vField := TDBField.Create(query.FieldByName('FIELD_NAME').AsString,aTableName);
         with vField do begin
-           TableName    :=  aTableName.ToUpper;
-           Name         := query.FieldByName('FIELD_NAME').AsString;
            DomainName   := query.FieldByName('FIELD_SOURCE').AsString;
            FieldType    := query.FieldByName('FIELD_TYPE').AsString;
            NotNull      :=  query.FieldByName('FIELD_NULL').AsString = 'NOT NULL';
@@ -395,9 +394,8 @@ begin
  FQueryFK.Open;
  while not FQueryFK.Eof do
  begin
-    vFK := TDBForeignKey.Create();
+    vFK := TDBForeignKey.Create(FQueryFK.FieldByName('FK_NAME').AsString);
     vFK.TableName := aTableName.ToUpper();
-    vFK.Name :=  FQueryFK.FieldByName('FK_NAME').AsString;
     vFK.OnFields := FQueryFK.FieldByName('FIELD_NAME').AsString;
     vFK.FKTable :=  FQueryFK.FieldByName('REF_TABLE_NAME').AsString;
     vFK.FKField :=  FQueryFK.FieldByName('REF_FIELD_NAME').AsString;
@@ -427,9 +425,8 @@ begin
    FQueryIndex.Open;
    while not FQueryIndex.Eof do
    begin
-      vIndex := TDBIndex.Create();
+      vIndex := TDBIndex.Create(FQueryIndex.FieldByName('INDEX_NAME').AsString);
       vIndex.TableName := aTableName.ToUpper();
-      vIndex.Name :=  FQueryIndex.FieldByName('INDEX_NAME').AsString;
       vIndex.OnFields := FQueryIndex.FieldByName('FIELDS').AsString;
       vIndex.Expression := FQueryIndex.FieldByName('EXPRESSION').AsString;
       vIndex.Unique := FQueryIndex.FieldByName('IS_UNIQUE').AsString = 'S';
@@ -453,8 +450,7 @@ begin
   FQueryPK.Open();
 
   while not FQueryPK.Eof do begin
-    vIndex := TDBPrimaryKey.Create;
-    vIndex.Name := FQueryPK.FieldByName('NAME').AsString;
+    vIndex := TDBPrimaryKey.Create(FQueryPK.FieldByName('NAME').AsString);
     vIndex.TableName := aTableName.ToUpper();
     vIndex.OnFields := FQueryPK.FieldByName('FIELDS').AsString;
     vIndex.IndexName := FQueryPK.FieldByName('INDEX_NAME').AsString;
@@ -487,9 +483,8 @@ begin
          if (FQueryFields.FieldByName('FIELD_NAME').AsString <> '') then
          begin
 
-            vField := TDBField.Create;
+            vField := TDBField.Create(FQueryFields.FieldByName('FIELD_NAME').AsString,'');
             with vField do begin
-               Name         := FQueryFields.FieldByName('FIELD_NAME').AsString;
                FieldType    := FQueryFields.FieldByName('FIELD_TYPE').AsString;
                NotNull      :=  FQueryFields.FieldByName('FIELD_NULL').AsString = 'NOT NULL';
                Charset      := FQueryFields.FieldByName('FIELD_CHARSET').AsString;
@@ -539,10 +534,8 @@ begin
       while not FQueryFields.Eof do
       begin
 
-        vField := TDBField.Create;
+        vField := TDBField.Create(FQueryFields.FieldByName('FIELD_NAME').AsString,aProcedureName.ToUpper);
         with vField do begin
-           TableName    := aProcedureName.ToUpper;
-           Name         := FQueryFields.FieldByName('FIELD_NAME').AsString;
            FieldType    := FQueryFields.FieldByName('FIELD_TYPE').AsString;
            NotNull      :=  FQueryFields.FieldByName('FIELD_NULL').AsString = 'NOT NULL';
            Charset      := FQueryFields.FieldByName('FIELD_CHARSET').AsString;
@@ -591,9 +584,8 @@ begin
  FQueryFK.Open;
  while not FQueryFK.Eof do
  begin
-    vUnique := TDBUnique.Create();
+    vUnique := TDBUnique.Create(FQueryFK.FieldByName('UNIQUE_NAME').AsString);
     vUnique.TableName := aTableName.ToUpper();
-    vUnique.Name :=  FQueryFK.FieldByName('UNIQUE_NAME').AsString;
     vUnique.OnFields := FQueryFK.FieldByName('FIELDS_NAME').AsString;
     vUnique.IndexName := FQueryFK.FieldByName('INDEX_NAME').AsString;
 
@@ -624,10 +616,7 @@ try
        LoadFunctions;
        LoadGeneratorsWithoutDependencies;
        LoadGenerators;
-
-       for I := 0 to FAditionalMigrations.Count - 1 do begin
-           FAditionalMigrations[i].CreateMigrations;
-       end;
+       LoadIncrementalMigrations;
 
    except
        raise;
@@ -651,9 +640,7 @@ begin
   while not FQueryGenerator.Eof do
   begin
     if (TDebugFilter.Listar(FQueryGenerator.FieldByName('generator_name').AsString)) then begin
-        vGenerator := TDBGenerator.Create;
-        vGenerator.Name := FQueryGenerator.FieldByName('generator_name').AsString;
-
+        vGenerator := TDBGenerator.Create(FQueryGenerator.FieldByName('generator_name').AsString);
         FGenerators.Add(vGenerator);
     end;
 
@@ -671,14 +658,66 @@ begin
   while not FQueryGenerator.Eof do
   begin
     if (TDebugFilter.Listar(FQueryGenerator.FieldByName('generator_name').AsString)) then begin
-        vGenerator := TDBGenerator.Create;
-        vGenerator.Name := FQueryGenerator.FieldByName('generator_name').AsString;
+        vGenerator := TDBGenerator.Create(FQueryGenerator.FieldByName('generator_name').AsString);
 
         FGeneratorsWithoutDeps.Add(vGenerator);
     end;
 
     FQueryGenerator.Next;
   end;
+
+
+end;
+
+procedure TDatabase.LoadIncrementalMigrations;
+var
+   migration : TMigration;
+   dbTable : TDBTable;
+   dbField : TDBField;
+   tbIndex,flIndex : integer;
+   tableName : string;
+begin
+
+
+  for migration in FAditionalMigrations do begin
+      migration.CreateMigrations;
+
+      for dbTable in migration.Tables do begin
+          tableName := dbTable.Name;
+
+          tbIndex := FTables.IndexOf(function(T : TDBTable) : boolean
+          begin
+              result := t.Name = tableName;
+          end);
+
+          if (tbIndex > -1) then begin
+
+              for dbField in FTables[tbIndex].Fields do begin
+
+                  flIndex := FTables[tbIndex].Fields.IndexOf(function(f : TDBField) : boolean
+                  begin
+                      result := f.Name = dbField.Name;
+                  end);
+
+                  if (flIndex > -1) then begin //Encontrou
+                      FTables[tbIndex].Fields[flIndex] := dbField;
+                  end
+                  else begin  //não existe
+                     FTables[tbIndex].Fields.Add(dbField);
+                  end;
+
+              end;
+
+          end
+          else begin
+             AddOrSetTable(dbTable);
+          end;
+
+
+      end;
+  end;
+
+
 
 
 end;
@@ -695,8 +734,7 @@ begin
   while not FQueryFunctions.Eof do
   begin
     if (TDebugFilter.Listar(FQueryFunctions.FieldByName('name').AsString)) then begin
-        vFunction := TDBFunction.Create;
-        vFunction.Name := FQueryFunctions.FieldByName('name').AsString;
+        vFunction := TDBFunction.Create(FQueryFunctions.FieldByName('name').AsString);
         vFunction.FunctionSource := FQueryFunctions.FieldByName('source').AsString;
         GetFunctionFields(vFunction.Name, InputFields, vReturnType );
         vFunction.InputFields := InputFields;
@@ -729,8 +767,7 @@ begin
     if (TDebugFilter.Listar(FQueryFunctions.FieldByName('name').AsString)) then begin
 
 
-      vProcedure := TDBProcedure.Create;
-      vProcedure.Name := FQueryFunctions.FieldByName('name').AsString;
+      vProcedure := TDBProcedure.Create(FQueryFunctions.FieldByName('name').AsString);
       vProcedure.ProcedureSource := FQueryFunctions.FieldByName('source').AsString;
       GetProcedureFields(vProcedure.Name, InputFields,outputFields);
 
@@ -774,8 +811,7 @@ begin
 
      if (TDebugFilter.Listar(name)) then begin
        if (isTable) then begin
-          vTable := TDBTable.Create;
-          vTable.Name := name;
+          vTable := TDBTable.Create(name);
           vTable.Fields := GetFields(name);
           vTable.PrimaryKeys := GetPrimaryKeys(name);
           vTable.ForeignKeys := GetForeignKeys(name);
@@ -791,8 +827,7 @@ begin
 
        end
        else begin
-          vView := TDBView.Create();
-          vView.Name := name;
+          vView := TDBView.Create(name);
           vView.FieldList := GetFieldList(name);
           vView.ViewSource :=  FQueryTables.FieldByName('SOURCE').AsString;
 
@@ -818,8 +853,7 @@ begin
   while not FQueryTrigger.Eof do
   begin
      if (TDebugFilter.Listar(FQueryTrigger.FieldByName('TRIGGER_NAME').AsString)) then begin
-         vTrigger := TDBTrigger.Create;
-        vTrigger.Name := FQueryTrigger.FieldByName('TRIGGER_NAME').AsString;
+        vTrigger := TDBTrigger.Create(FQueryTrigger.FieldByName('TRIGGER_NAME').AsString);
         vTrigger.TableName := FQueryTrigger.FieldByName('TABLE_NAME').AsString;
         vTrigger.TriggerSource := FQueryTrigger.FieldByName('TRIGGER_SOURCE').AsString;
         vTrigger.TriggerType :=  TTriggerType(FQueryTrigger.FieldByName('TRIGGER_TYPE').asInteger);

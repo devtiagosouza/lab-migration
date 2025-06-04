@@ -14,7 +14,7 @@ interface
 
        function EqualityScript(Obj: TDBObject; args : array of TObject) : string; override;
 
-      constructor Create();
+      constructor Create(AName : string);
   end;
 
 
@@ -22,9 +22,9 @@ implementation
 
 { TDBGenerator }
 
-constructor TDBGenerator.Create();
+constructor TDBGenerator.Create(AName : string);
 begin
-  inherited Create;
+  inherited Create(AName);
   ObjectTypeFriendlyName := 'Generator';
 end;
 

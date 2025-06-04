@@ -17,7 +17,7 @@ type
     function GetObjectTypeFriendlyName: string;
 
    public
-       property Name : string read FName write FName;
+       property Name : string read FName;
 
        property ObjectTypeFriendlyName : string read GetObjectTypeFriendlyName write FObjectTypeFriendlyName;
 
@@ -30,6 +30,8 @@ type
 
        function EqualityScript(Obj: TDBObject; args : array of TObject) : string; overload; virtual;
        function EqualityScript(Obj: TDBObject) : string; overload; virtual;
+
+       constructor Create(AName : string);
    end;
 
 
@@ -38,6 +40,11 @@ type
 implementation
 
 { TDBObject }
+
+constructor TDBObject.Create(AName: string);
+begin
+  FName := AName;
+end;
 
 function TDBObject.DDLAlter: string;
 begin

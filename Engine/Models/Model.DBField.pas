@@ -18,7 +18,7 @@ interface
 
  public
     property DomainName : string read FDomainName write FDomainName;
-    property TableName : string read FTableName write FTableName;
+    property TableName : string read FTableName;
     property FieldType : string read FFieldType write FFieldType;
     property NotNull : boolean read FNotNull write FNotNull;
     property DefaultValue : string read FDefaultValue write FDefaultValue;
@@ -35,7 +35,7 @@ interface
 
     function GetFullFieldSet(spacing : integer = 0) : string;
 
-   constructor Create();
+    constructor Create(AName, ATableName : string);
 
  end;
 
@@ -50,9 +50,10 @@ implementation
 { TDBField }
 
 
-constructor TDBField.Create();
+constructor TDBField.Create(AName, ATableName : string);
 begin
-  inherited Create;
+  inherited Create(AName);
+  FTableName := ATableName;
   ObjectTypeFriendlyName := 'Campo';
 end;
 

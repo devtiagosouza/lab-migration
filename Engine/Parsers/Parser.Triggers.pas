@@ -35,11 +35,12 @@ var
   Match: TMatch;
   triggerType : string;
 begin
-  trigger := TDBTrigger.Create;
+  Result := nil;
+
   Match := TRegEx.Match(TriggerDDL, Pattern, [roIgnoreCase, roSingleLine]);
   if Match.Success then
   begin
-    trigger.Name := Match.Groups[1].Value;
+    trigger := TDBTrigger.Create(Match.Groups[1].Value);
     trigger.TableName := Match.Groups[2].Value;
     trigger.IsActive := Match.Groups[3].Value <> 'INACTIVE';
     triggerType := Match.Groups[4].Value.trim;
@@ -52,9 +53,11 @@ begin
 
     end;
 
+    Result := trigger;
+
   end;
 
-  Result := trigger;
+
 end;
 
 end.

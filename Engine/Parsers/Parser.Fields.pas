@@ -10,8 +10,8 @@ type
   private
     class function SplitColumns(const ColumnsSection: string): TArray<string>;
   public
-    class function ParseField(const AColumnsDefs, ATableName: string): TDBField;  overload;
-    class function ParseField(const Definition: string) : TDBField; overload;
+    class function ParseField(const AColumnsDefs, ATableName: string): TDBField;
+    class function ParseFieldFromDefinition(const Name : string; const TableName : string; const Definition: string) : TDBField;
 
     class function Parse(const AColumnsSection, ATableName: string) : TList<TDBField>;
   end;
@@ -20,7 +20,7 @@ implementation
 
 { TFieldParser }
 
-class function TFieldParser.ParseField(const Definition: string): TDBField;
+class function TFieldParser.ParseFieldFromDefinition(const Name : string; const TableName : string; const Definition: string): TDBField;
 const
  // REGEX_PATTERN = '(?i)(VARCHAR\(\d+(?:,\d+)?\)|\w+(?:\(\d+(?:,\d+)?\))?|BLOB|SUB_TYPE\s+\w+|SEGMENT\s+SIZE\s+\d+|CHARACTER\s+SET\s+\w+|COLLATE\s+\w+|DEFAULT\s+(?:''''[^'']*''''|\S+)|NOT\s+NULL|NULL|CHECK\s*\([^\)]+\)|PRIMARY\s+KEY|UNIQUE|REFERENCES\s+\w+)';
 REGEX_PATTERN =
@@ -36,7 +36,7 @@ var
   Token: string;
   RawDefault: string;
 begin
- Field := TDBField.Create;
+  Field := TDBField.Create(Name,TableName);
   FieldTypeSet := False;
 
   Matches := TRegEx.Matches(Definition, REGEX_PATTERN);
@@ -53,18 +53,13 @@ begin
     else if Token.StartsWith('DEFAULT') then
     begin
       RawDefault := Trim(Copy(Match.Value, 9, MaxInt));
-       // Remove aspas duplas externas se existirem (ex: ''TESTE'')
+
       if RawDefault.StartsWith('''') and RawDefault.EndsWith('''') then
         RawDefault := Copy(RawDefault, 2, Length(RawDefault) - 2);
 
-      // Substitui aspas duplicadas internas por aspas simples normais
       RawDefault := StringReplace(RawDefault, '''''', '''', [rfReplaceAll]);
 
       Field.DefaultValue := RawDefault;
-
-     // Field.DefaultValue := Trim(Copy(Match.Value, 9, MaxInt)); // remove "DEFAULT "
-
-
 
     end
     else if Token = 'NOT NULL' then
@@ -88,16 +83,17 @@ var
  FieldMatch : TFieldTypeMatch;
  FieldTypeCandidate: string;
 begin
+    Result := nil;
+
     CharSet := '';
     Collate := '';
     DefaultPart := '';
 
-    Field := TDBField.Create;
-    Field.TableName := ATableName;
+
     Match := TRegEx.Match(AColumnsDefs, '^(\w+)\s+(.+)', [roIgnoreCase]);
     if Match.Success then
     begin
-      Field.Name := Match.Groups[1].Value;
+      Field := TDBField.Create(Match.Groups[1].Value,ATableName);
       FieldTypeCandidate := Match.Groups[2].Value;
 
       if TRegEx.IsMatch(FieldTypeCandidate, '\bCHARACTER\s+SET\s+\w+', [roIgnoreCase]) then
@@ -136,13 +132,15 @@ begin
       Field.Collate      := Collate;
       Field.DefaultValue := DefaultPart;
       Field.NotNull      := TRegEx.IsMatch(AColumnsDefs, '\bNOT\s+NULL\b', [roIgnoreCase]);
+
+      result := Field;
     end
     else
     begin
-      Field.Name := AColumnsDefs;
+       Result := nil;
     end;
 
-    Result := Field;
+
 end;
 
 

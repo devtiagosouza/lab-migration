@@ -22,7 +22,7 @@ interface
 
       function EqualityScript(Obj: TDBObject; args : array of TObject) : string; override;
 
-      constructor Create();
+      constructor Create(AName : string);
   end;
 
 
@@ -30,9 +30,9 @@ implementation
 
 { TDBFunction }
 
-constructor TDBFunction.Create();
+constructor TDBFunction.Create(AName : string);
 begin
-   inherited Create;
+   inherited Create(AName);
    FInputFields := TList<TDBField>.Create;
    ObjectTypeFriendlyName := 'Function';
 end;

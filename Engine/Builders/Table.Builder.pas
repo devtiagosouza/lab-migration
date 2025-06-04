@@ -7,8 +7,8 @@ uses System.Classes, Model.DBField,Model.DBTable,Field.Builder, DCollections;
 
 type ITableBuilder = interface
 ['{2702E277-BAC7-4BCD-B629-67E15543D9E2}']
-   function New(const aTableName: string): ITableBuilder;
-   function SetTable(aTable : TDBTable) : ITableBuilder;
+   function New(const aTableName: string): ITableBuilder; overload;
+   function SetTable(aTable : TDBTable) : ITableBuilder; overload;
    function Column(const aColumnName, aTypeAndDefs: string): ITableBuilder;
    function Build: TDBTable;
 
@@ -16,10 +16,14 @@ end;
 
 type TTableBuilder = class(TInterfacedObject,ITableBuilder)
 
+strict private
+    constructor Create;
+
 private
   FTable : TDBTable;
 
 public
+
      function New(const aTableName: string): ITableBuilder;
      function SetTable(aTable : TDBTable) : ITableBuilder;
      function Column(const aColumnName, aTypeAndDefs: string): ITableBuilder;
@@ -46,28 +50,32 @@ function TTableBuilder.Column(const aColumnName,
   aTypeAndDefs: string): ITableBuilder;
   var
  field : TDBField;
+ index : integer;
 begin
- field := FTable.Fields.First(function(f : TDBField) : boolean
+ index := FTable.Fields.IndexOf(function(f : TDBField) : boolean
  begin
-    result := (f.TableName = FTable.Name) and (f.Name = aColumnName);
+    result := (f.Name = aColumnName);
  end);
 
- if (field = nil) then begin
-     field := TFieldParser.ParseField(aTypeAndDefs);
-     if (field <> nil) then begin
-       field.Name := aColumnName;
-       field.TableName := FTable.Name;
-
-       FTable.Fields.Add(Field);
-     end;
- end
- else begin
-     field := TFieldParser.ParseField(aTypeAndDefs);
+ field := TFieldParser.ParseFieldFromDefinition(aColumnName,FTable.Name, aTypeAndDefs);
+ if (field <> nil) then begin
+   if (index < 0) then begin
+      FTable.Fields.Add(Field);
+   end
+   else begin
+      FTable.Fields[index] := field;
+   end;
  end;
+
 
  Result := Self;
 end;
 
+
+constructor TTableBuilder.Create;
+begin
+  inherited;
+end;
 
 destructor TTableBuilder.Destroy;
 begin
@@ -77,10 +85,7 @@ end;
 
 function TTableBuilder.New(const aTableName: string): ITableBuilder;
 begin
-
-
-  FTable := TDBTable.Create;
-  FTable.Name := aTableName;
+  FTable := TDBTable.Create(aTableName);
   Result := Self;
 end;
 

@@ -37,13 +37,14 @@ var
 
   InputParams : string;
 begin
-  func := TDBFunction.Create;
+  Result := nil;
+
 
   Match := TRegEx.Match(FunctionDDL, Pattern, [roIgnoreCase, roSingleLine]);
 
   if Match.Success then
   begin
-    func.Name := Match.Groups[1].Value;
+    func := TDBFunction.Create(Match.Groups[1].Value);
 
     InputParams := Match.Groups[2].Value;
     func.ReturnType := Match.Groups[3].Value;
@@ -54,9 +55,9 @@ begin
 
 
     func.FunctionSource := Match.Groups[4].Value;
+    Result := func;
   end;
 
-  Result := func;
 end;
 
 end.

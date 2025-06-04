@@ -22,11 +22,14 @@ var
   ColumnsSection: string;
   Match : TMatch;
 begin
-  Table := TDBTable.Create;
+  Result := nil;
+
+
+
 
   Match := TRegEx.Match(TableDDL, 'CREATE\s+TABLE\s+(\w+)', [roIgnoreCase]);
   if Match.Success then
-    Table.Name := Match.Groups[1].Value;
+    Table := TDBTable.Create(Match.Groups[1].Value);
 
   Match := TRegEx.Match(TableDDL, '\((.*)\)', [roSingleLine]);
   if Match.Success then

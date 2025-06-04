@@ -42,13 +42,14 @@ var
   InputParams : string;
   OutputParams : string;
 begin
-  proc := TDBProcedure.Create;
+  Result := nil;
+
 
   Match := TRegEx.Match(ProcedureDDL, Pattern, [roIgnoreCase, roSingleLine]);
 
   if Match.Success then
   begin
-    proc.Name := Match.Groups[1].Value;
+    proc := TDBProcedure.Create(Match.Groups[1].Value);
 
     InputParams := Match.Groups[2].Value;
     OutputParams := Match.Groups[3].Value;
@@ -62,9 +63,10 @@ begin
     end;
 
     Proc.ProcedureSource := Match.Groups[4].Value;
+
+    Result := Proc;
   end;
 
-  Result := Proc;
 end;
 
 end.

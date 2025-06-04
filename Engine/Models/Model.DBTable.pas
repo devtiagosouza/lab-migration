@@ -37,23 +37,19 @@ interface
       function DDLCreate() : string; overload; override;
       function EqualityScript(Obj: TDBObject; args : array of TObject) : string; override;
 
-
-      constructor Create();
-
-
+      constructor Create(AName : string);
 
   end;
 
-
-
- 
 
 implementation
 
 { TDBTable }
 
-constructor TDBTable.Create();
+constructor TDBTable.Create(AName : string);
 begin
+  inherited Create(AName);
+
   FFields := TList<TDBField>.create;
   FPrimaryKeys := TList<TDBPrimaryKey>.Create;
   FForeignKeys := TList<TDBForeignKey>.Create;
@@ -368,7 +364,6 @@ var
   Regex: TRegEx;
   DicGenerators: TDictionary<string, Boolean>;
   gen : string;
-  generator : TDBGenerator;
 
 
   trigger : TDBTrigger;
@@ -390,10 +385,7 @@ begin
 
 
     for gen in DicGenerators.Keys do begin
-        generator := TDBGenerator.Create();
-        generator.Name := gen;
-
-        Result.Add(generator);
+        Result.Add( TDBGenerator.Create(gen));
     end;
 
 

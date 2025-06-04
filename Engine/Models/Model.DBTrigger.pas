@@ -64,7 +64,7 @@ interface
       procedure SetTriggerTypeFromString(Value: string);
 
 
-      constructor Create();
+      constructor Create(AName : string);
   end;
 
 
@@ -72,10 +72,10 @@ implementation
 
 { TDBTrigger }
 
-constructor TDBTrigger.Create();
+constructor TDBTrigger.Create(AName : string);
 begin
+  inherited Create(AName);
   FGenerators := TList<TDBGenerator>.Create();
-
 end;
 
 function TDBTrigger.DDLCreate: string;
@@ -138,7 +138,6 @@ var
   Regex: TRegEx;
   Generators: TDictionary<string, Boolean>;
   gen : string;
-  generator : TDBGenerator;
 begin
   FTriggerSource := Value;
   FGenerators := TList<TDBGenerator>.Create;
@@ -154,12 +153,8 @@ begin
     end;
 
 
-
     for gen in Generators.Keys do begin
-       generator := TDBGenerator.Create();
-       generator.Name := gen;
-
-        FGenerators.Add(generator);
+       FGenerators.Add(TDBGenerator.Create(gen));
     end;
 
   finally

@@ -18,7 +18,7 @@ public
    function DDLCreate: string; override;
    function EqualityScript(Obj: TDBObject; args : array of TObject) : string; override;
 
-   constructor Create();
+   constructor Create(AName : string);
 end;
 
 
@@ -26,8 +26,9 @@ implementation
 
 { TDBView }
 
-constructor TDBView.Create();
+constructor TDBView.Create(AName : string);
 begin
+   inherited Create(AName);
    FFieldList := TStringList.Create;
 
 end;

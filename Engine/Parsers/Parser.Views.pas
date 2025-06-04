@@ -35,10 +35,9 @@ var
  i : integer;
  field : string;
 begin
-    View := TDBView.Create;
     Match := TRegEx.Match(ViewDDL, ViewPattern, [roIgnoreCase,roSingleLine]);
     if Match.Success then begin
-        View.Name := Match.Groups[1].Value;
+        View := TDBView.Create(Match.Groups[1].Value);
         ColumnsSection := Match.Groups[2].Value;
 
         for field in ColumnsSection.Split([','], TStringSplitOptions.ExcludeEmpty) do begin
@@ -46,9 +45,11 @@ begin
         end;
 
         View.ViewSource := Match.Groups[3].Value.Replace(';','');
+
+        exit;
     end;
 
-    Result := View;
+    Result := nil;
 end;
 
 end.

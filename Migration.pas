@@ -9,19 +9,21 @@ uses  System.Classes,System.SysUtils, Model.DBObject,Splitters, Sql.Script.Build
 type TMigration = class
 
 private
-    FScripts: IScriptBuilder;
+  FScripts: IScriptBuilder;
 
 protected
   FTables : TList<TDBTable>;
 
   property Scripts : IScriptBuilder read FScripts;
+
   function Table(aName: string) : ITableBuilder;
 
 public
-
   constructor Create();
 
   procedure CreateMigrations(); virtual;
+
+  property Tables : TList<TDBTable> read FTables;
 
 end;
 
@@ -56,16 +58,15 @@ begin
   end);
 
   if (index = -1) then begin
-    vTable := TDBTable.Create;
-    vTable.Name := aName;
-    FTables.Add(vTable);
+    FTables.Add(TDBTable.Create(aName));
+    index := FTables.count - 1;
   end
   else begin
     vTable := FTables[index];
   end;
 
   Result := TTableBuilder.Create
-              .SetTable(vTable);
+              .SetTable(FTables[index]);
 
 end;
 

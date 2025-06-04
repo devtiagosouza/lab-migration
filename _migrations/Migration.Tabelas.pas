@@ -2,7 +2,7 @@ unit Migration.Tabelas;
 
 interface
 
-uses System.SysUtils, System.Classes, Model.DBTable, Migration;
+uses System.SysUtils, System.Classes, Model.DBTable, Migration, DCollections;
 
 type
   TMigrationTabelas = class(TMigration)
@@ -23,9 +23,18 @@ begin
 end;
 
 procedure TMigrationTabelas.Tabela_AJUSTE_ICMS;
+var
+  tabela : TDBTable;
+  tabelas : TList<TDBTable>;
 begin
+
+
+ // tabela :=
     Table('AJUSTE_ICMS')
      .Column('MEU_CAMPO','VARCHAR(10) CHARACTER SET WIN1252 DEFAULT ''TESTANDO'' NOT NULL COLLATE WIN_PTBR');
+
+
+     tabelas := FTables;
 end;
 
 end.

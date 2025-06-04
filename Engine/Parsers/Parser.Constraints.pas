@@ -32,10 +32,11 @@ begin
   Match := TRegEx.Match(ConstraintSQL, '^\s*ALTER\s+TABLE\s+(\w+)\s+ADD\s+CONSTRAINT\s+(\w+)\s+PRIMARY\s+KEY\s*\(([^)]+)\)', [roIgnoreCase]);
   if Match.Success then begin
   begin
-     Constraint := TDBPrimaryKey.Create;
-     Constraint.TableName := Match.Groups[1].Value;
      ConstraintName := Match.Groups[2].Value;
-     Constraint.Name := ConstraintName;
+
+     Constraint := TDBPrimaryKey.Create(ConstraintName);
+     Constraint.TableName := Match.Groups[1].Value;
+
      ColumnsStr := Match.Groups[3].Value;
     Columns := ColumnsStr.Split([','], TStringSplitOptions.ExcludeEmpty);
     Constraint.OnFields := '';
@@ -53,9 +54,9 @@ begin
   Match := TRegEx.Match(ConstraintSQL, 'CONSTRAINT\s+(\w+)\s+PRIMARY\s+KEY\s*\(([^)]+)\)', [roIgnoreCase]);
   if Match.Success then
   begin
-    Constraint := TDBPrimaryKey.Create;
     ConstraintName := Match.Groups[1].Value;
-    Constraint.Name := ConstraintName;
+
+    Constraint := TDBPrimaryKey.Create(ConstraintName);
     Constraint.TableName := '';
     ColumnsStr := Match.Groups[2].Value;
     Columns := ColumnsStr.Split([','], TStringSplitOptions.ExcludeEmpty);
@@ -74,8 +75,7 @@ begin
   Match := TRegEx.Match(ConstraintSQL, 'CONSTRAINT\s+(\w+)\s+UNIQUE\s*\(([^)]+)\)', [roIgnoreCase]);
   if Match.Success then
   begin
-    UQ := TDBUnique.Create;
-    UQ.Name := Match.Groups[1].Value;
+    UQ := TDBUnique.Create(Match.Groups[1].Value);
     UQ.TableName := '';
     ColumnsStr := Match.Groups[2].Value;
     Columns := ColumnsStr.Split([','], TStringSplitOptions.ExcludeEmpty);
@@ -95,8 +95,7 @@ begin
     'CONSTRAINT\s+(\w+)\s+FOREIGN\s+KEY\s*\(([^)]+)\)\s+REFERENCES\s+(\w+)\s*\(([^)]+)\)', [roIgnoreCase]);
   if Match.Success then
   begin
-    FK := TDBForeignKey.Create;
-    FK.Name := Match.Groups[1].Value;
+    FK := TDBForeignKey.Create(Match.Groups[1].Value);
     FK.TableName := '';
     ColumnsStr := Match.Groups[2].Value;
     FK.OnFields := ColumnsStr.Replace(' ', '');
@@ -111,8 +110,7 @@ begin
   Match := TRegEx.Match(ConstraintSQL, 'CONSTRAINT\s+(\w+)\s+CHECK\s*\((.+)\)', [roIgnoreCase]);
   if Match.Success then
   begin
-    CHK := TDBCheck.Create;
-    CHK.Name := Match.Groups[1].Value;
+    CHK := TDBCheck.Create(Match.Groups[1].Value);
     CHK.TableName := '';
     CHK.Source := Match.Groups[2].Value.Trim;
     Result := CHK;
