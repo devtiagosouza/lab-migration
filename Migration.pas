@@ -2,7 +2,7 @@ unit Migration;
 
 interface
 
-uses  System.Classes,System.SysUtils, Model.DBObject,Splitters, Sql.Script.Builder,DCollections,
+uses  System.Classes,System.SysUtils, Model.DBObject,Splitters, Sql.Script.Builder,System.Generics.collections,DCollections,
   Model.DBTable, Model.DBTrigger, Model.DBIndex, Model.DBView, Model.DBProcedure,Model.DBFunction,
   Model.DBGenerator,Table.Builder;
 
@@ -10,9 +10,11 @@ type TMigration = class
 
 private
   FScripts: IScriptBuilder;
+    function GetTables: TList<TDBTable>;
 
 protected
-  FTables : TList<TDBTable>;
+  FTableBuilders : TList<ITableBuilder>;
+
 
   property Scripts : IScriptBuilder read FScripts;
 
@@ -23,7 +25,7 @@ public
 
   procedure CreateMigrations(); virtual;
 
-  property Tables : TList<TDBTable> read FTables;
+  property Tables : TList<TDBTable> read GetTables;
 
 end;
 
@@ -35,7 +37,7 @@ implementation
 constructor TMigration.Create();
 begin
     FScripts := TScriptBuilder.Create;
-    FTables := TList<TDBTable>.Create;
+    FTableBuilders := TList<ITableBuilder>.Create;
 end;
 
 
@@ -46,28 +48,35 @@ end;
 
 
 
+function TMigration.GetTables: TList<TDBTable>;
+var
+ builder : ITableBuilder;
+begin
+  Result := TList<TDBTable>.Create;
+  for builder in FTableBuilders do begin
+      Result.Add(builder.Build);
+  end;
+end;
+
 function TMigration.Table(aName : string): ITableBuilder;
 var
- vTable : TDBTable;
  index : integer;
 begin
 
-  index := FTables.IndexOf(function(T : TDBTable) : boolean
+  index := FTableBuilders.IndexOf(function(I : ITableBuilder) : boolean
   begin
-     Result := T.Name = aName;
+     Result := i.GetTableName = aName;
   end);
 
   if (index = -1) then begin
-    FTables.Add(TDBTable.Create(aName));
-    index := FTables.count - 1;
+     result :=  TTableBuilder.Create
+              .SetTable(TDBTable.Create(aName));
+
+     FTableBuilders.Add(result);
   end
   else begin
-    vTable := FTables[index];
+     result := FTableBuilders[index];
   end;
-
-  Result := TTableBuilder.Create
-              .SetTable(FTables[index]);
-
 end;
 
 end.

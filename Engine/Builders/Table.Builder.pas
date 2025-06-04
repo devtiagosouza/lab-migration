@@ -12,6 +12,8 @@ type ITableBuilder = interface
    function Column(const aColumnName, aTypeAndDefs: string): ITableBuilder;
    function Build: TDBTable;
 
+   function GetTableName : string;
+
 end;
 
 type TTableBuilder = class(TInterfacedObject,ITableBuilder)
@@ -29,6 +31,8 @@ public
      function Column(const aColumnName, aTypeAndDefs: string): ITableBuilder;
 
      function Build: TDBTable;
+
+     function GetTableName : string;
 
      destructor Destroy; override;
 end;
@@ -81,6 +85,11 @@ destructor TTableBuilder.Destroy;
 begin
   FTable.Free;
   inherited;
+end;
+
+function TTableBuilder.GetTableName: string;
+begin
+  Result := FTable.Name;
 end;
 
 function TTableBuilder.New(const aTableName: string): ITableBuilder;

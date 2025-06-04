@@ -32,6 +32,8 @@ object Form1: TForm1
     ParentFont = False
     ScrollBars = ssBoth
     TabOrder = 0
+    ExplicitLeft = -6
+    ExplicitTop = 59
   end
   object Panel1: TPanel
     Left = 0
