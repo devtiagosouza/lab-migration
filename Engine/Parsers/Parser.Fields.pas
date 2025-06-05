@@ -53,14 +53,7 @@ begin
     else if Token.StartsWith('DEFAULT') then
     begin
       RawDefault := Trim(Copy(Match.Value, 9, MaxInt));
-
-      if RawDefault.StartsWith('''') and RawDefault.EndsWith('''') then
-        RawDefault := Copy(RawDefault, 2, Length(RawDefault) - 2);
-
-      RawDefault := StringReplace(RawDefault, '''''', '''', [rfReplaceAll]);
-
       Field.DefaultValue := RawDefault;
-
     end
     else if Token = 'NOT NULL' then
       Field.NotNull := True
@@ -209,3 +202,4 @@ begin
 end;
 
 end.
+

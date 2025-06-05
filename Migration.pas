@@ -10,7 +10,7 @@ type TMigration = class
 
 private
   FScripts: IScriptBuilder;
-    function GetTables: TList<TDBTable>;
+  function GetTables: TList<TDBTable>;
 
 protected
   FTableBuilders : TList<ITableBuilder>;

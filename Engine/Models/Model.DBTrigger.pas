@@ -81,14 +81,20 @@ end;
 function TDBTrigger.DDLCreate: string;
 var
  command : TStringList;
-
+ source : string;
 begin
   try
     try
       command := TStringList.Create;
       command.Add('CREATE OR ALTER TRIGGER '+Name+' FOR '+TableName);
       command.Add(ifthen(IsActive,'ACTIVE','INACTIVE')+' '+TriggerTypeToString(FTriggerType)+' POSITION '+TriggerPosition.ToString);
-      command.Add(TriggerSource);
+
+      source := TriggerSource.Trim;
+
+      if (source.EndsWith('^')) then
+          source := Copy(source, 1, Length(source) - 1);
+
+      command.Add(source);
 
       result := string.join(sLineBreak,command.ToStringArray);
     except

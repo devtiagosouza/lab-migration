@@ -57,6 +57,11 @@ private
 
     procedure LoadIncrementalMigrations;
 
+    procedure AppendAditionalMigrationTables(migrationTables : TList<TDBTable>);
+    procedure AppendAditionalMigrationFields(tableIndex: integer; migrationFields : TList<TDBField>);
+    procedure AppendAditionalMigrationTriggers(tableIndex: integer; migrationTriggers : TList<TDBTrigger>);
+
+
 public
     function GetTables: TList<TDBTable>;
     function GetViews: TList<TDBView>;
@@ -247,6 +252,76 @@ begin
         FViews.Add(obj);
     end;
 
+end;
+
+procedure TDatabase.AppendAditionalMigrationFields(tableIndex: integer;
+  migrationFields: TList<TDBField>);
+  var
+  dbMigrationField : TDBField;
+  index : integer;
+begin
+  for dbMigrationField in migrationFields do begin
+
+     index := FTables[tableIndex].Fields.IndexOf(function(f : TDBField) : boolean
+     begin
+         result := f.Name = dbMigrationField.Name;
+     end);
+
+     if (index > -1) then begin //Encontrou
+         FTables[tableIndex].Fields[index] := dbMigrationField;
+     end
+     else begin  //não existe
+        FTables[tableIndex].Fields.Add(dbMigrationField);
+     end;
+
+  end;
+end;
+
+procedure TDatabase.AppendAditionalMigrationTables(
+  migrationTables: TList<TDBTable>);
+  var
+   dbMigrationTable : TDBTable;
+   index : integer;
+begin
+      for dbMigrationTable in migrationTables do begin
+
+          index := FTables.IndexOf(function(T : TDBTable) : boolean
+          begin
+              result := t.Name = dbMigrationTable.Name;
+          end);
+
+          if (index > -1) then begin  //Econtrou a tabela
+             AppendAditionalMigrationFields(index, dbMigrationTable.Fields);
+             AppendAditionalMigrationTriggers(index,dbMigrationTable.Triggers );
+          end
+          else begin
+             AddOrSetTable(dbMigrationTable);
+          end;
+
+      end;
+end;
+
+procedure TDatabase.AppendAditionalMigrationTriggers(tableIndex: integer;
+  migrationTriggers: TList<TDBTrigger>);
+  var
+    index : integer;
+    dbMigrationTrigger : TDBTrigger;
+begin
+  for dbMigrationTrigger in migrationTriggers do begin
+
+     index := FTables[tableIndex].Triggers.IndexOf(function(t : TDBTrigger) : boolean
+     begin
+         result := t.Name = dbMigrationTrigger.Name;
+     end);
+
+     if (index > -1) then begin //Encontrou
+         FTables[tableIndex].Triggers[index] := dbMigrationTrigger;
+     end
+     else begin  //não existe
+        FTables[tableIndex].Triggers.Add(dbMigrationTrigger);
+     end;
+
+  end;
 end;
 
 constructor TDatabase.Create(AConnection : TFDConnection);
@@ -672,49 +747,17 @@ end;
 procedure TDatabase.LoadIncrementalMigrations;
 var
    migration : TMigration;
-   dbTable : TDBTable;
-   dbField : TDBField;
-   tbIndex,flIndex : integer;
-   tableName : string;
+   dbMigrationTable : TDBTable;
+   dbMigrationField : TDBField;
+   dbMigrationTrigger : TDBTrigger;
+   tbIndex,flIndex, trIndex : integer;
 begin
 
 
   for migration in FAditionalMigrations do begin
       migration.CreateMigrations;
 
-      for dbTable in migration.Tables do begin
-          tableName := dbTable.Name;
-
-          tbIndex := FTables.IndexOf(function(T : TDBTable) : boolean
-          begin
-              result := t.Name = tableName;
-          end);
-
-          if (tbIndex > -1) then begin
-
-              for dbField in FTables[tbIndex].Fields do begin
-
-                  flIndex := FTables[tbIndex].Fields.IndexOf(function(f : TDBField) : boolean
-                  begin
-                      result := f.Name = dbField.Name;
-                  end);
-
-                  if (flIndex > -1) then begin //Encontrou
-                      FTables[tbIndex].Fields[flIndex] := dbField;
-                  end
-                  else begin  //não existe
-                     FTables[tbIndex].Fields.Add(dbField);
-                  end;
-
-              end;
-
-          end
-          else begin
-             AddOrSetTable(dbTable);
-          end;
-
-
-      end;
+      AppendAditionalMigrationTables(migration.Tables);
   end;
 
 

@@ -2,7 +2,7 @@ unit Table.Builder;
 
 interface
 
-uses System.Classes, Model.DBField,Model.DBTable,Field.Builder, DCollections;
+uses System.Classes, Model.DBField,Model.DBTable, Model.DBTrigger, DCollections;
 
 
 type ITableBuilder = interface
@@ -10,6 +10,8 @@ type ITableBuilder = interface
    function New(const aTableName: string): ITableBuilder; overload;
    function SetTable(aTable : TDBTable) : ITableBuilder; overload;
    function Column(const aColumnName, aTypeAndDefs: string): ITableBuilder;
+   function Trigger(const aTriggerName: string) : ITableBuilder;
+
    function Build: TDBTable;
 
    function GetTableName : string;
@@ -30,6 +32,8 @@ public
      function SetTable(aTable : TDBTable) : ITableBuilder;
      function Column(const aColumnName, aTypeAndDefs: string): ITableBuilder;
 
+     function Trigger(const aTriggerDDLCommand: string) : ITableBuilder;
+
      function Build: TDBTable;
 
      function GetTableName : string;
@@ -40,7 +44,7 @@ end;
 
 implementation
 
- uses Parser.Fields;
+ uses Parser.Fields, Parser.Triggers;
 
 { TTableBuilder }
 
@@ -102,6 +106,33 @@ function TTableBuilder.SetTable(aTable: TDBTable): ITableBuilder;
 begin
   FTable := aTable;
   Result := Self;
+end;
+
+function TTableBuilder.Trigger(const aTriggerDDLCommand: string): ITableBuilder;
+var
+ trg : TDBTrigger;
+ index : integer;
+ parser : TTriggerParser;
+begin
+   parser := TTriggerParser.Create;
+
+   trg := parser.Parse(aTriggerDDLCommand);
+   if (trg <> nil) then begin
+       index := FTable.Triggers.IndexOf(function(t : TDBTrigger) : boolean
+       begin
+          result := (t.Name = trg.Name);
+       end);
+
+         if (index < 0) then begin
+            FTable.Triggers.Add(trg);
+         end
+         else begin
+            FTable.Triggers[index] := trg;
+         end;
+   end;
+
+  Result := Self;
+
 end;
 
 end.

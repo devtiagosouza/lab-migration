@@ -145,8 +145,8 @@
         <DCCReference Include="Engine\TypeConverter.FloatToNumeric.pas"/>
         <DCCReference Include="Engine\TypeConverter.Natural.pas"/>
         <DCCReference Include="Engine\Builders\Table.Builder.pas"/>
-        <DCCReference Include="Engine\Builders\Field.Builder.pas"/>
         <DCCReference Include="_migrations\Migration.Tabelas.pas"/>
+        <DCCReference Include="Engine\Builders\Trigger.Builder.pas"/>
         <RcItem Include="Engine\Resources\QUERY_TABLES_AND_VIEWS.sql">
             <ContainerId>ResourceItem</ContainerId>
             <ResourceType>RCDATA</ResourceType>
@@ -217,17 +217,17 @@
             <ResourceType>RCDATA</ResourceType>
             <ResourceId>QUERY_FIELD_LIST_SQL</ResourceId>
         </RcItem>
-        <RcItem Include="Engine\Resources\DatabaseModel\MFX.FDB">
-            <ContainerId>ResourceItem</ContainerId>
-            <ResourceType>RCDATA</ResourceType>
-            <ResourceId>MODEL_DB</ResourceId>
-        </RcItem>
         <RcItem Include="Engine\Resources\QUERY_GENERATORS_WITHOUT_DEPS.sql">
             <ContainerId>ResourceItem</ContainerId>
             <ResourceType>RCDATA</ResourceType>
             <ResourceId>QUERY_GENERATORS_WITHOUT_DEPS_SQL</ResourceId>
         </RcItem>
         <RcItem Include="Engine\Resources\DatabaseModel\MFX.zip">
+            <ContainerId>ResourceItem</ContainerId>
+            <ResourceType>RCDATA</ResourceType>
+            <ResourceId>MIGRATION_DB1</ResourceId>
+        </RcItem>
+        <RcItem Include="Engine\Resources\DatabaseModel\MODEL_DEV_DB.zip">
             <ContainerId>ResourceItem</ContainerId>
             <ResourceType>RCDATA</ResourceType>
             <ResourceId>MIGRATION_DB</ResourceId>
@@ -308,7 +308,7 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="Engine\Resources\DatabaseModel\MFX.FDB" Configuration="Debug" Class="ProjectFile">
+                <DeployFile LocalName="Engine\Resources\DatabaseModel\MODEL_DEV_DB.zip" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>

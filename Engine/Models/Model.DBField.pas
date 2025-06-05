@@ -1,7 +1,7 @@
 unit Model.DBField;
 
 interface
-  uses Model.DBObject, system.SysUtils, DCollections;
+  uses Model.DBObject,System.Classes, system.SysUtils,System.StrUtils, DCollections;
 
  type TDBField = class(TDBObject)
 
@@ -15,13 +15,14 @@ interface
     FCollate: string;
     FTableName: string;
     FDomainName: string;
+    procedure SetDefaultValue(const Value: string);
 
  public
     property DomainName : string read FDomainName write FDomainName;
     property TableName : string read FTableName;
     property FieldType : string read FFieldType write FFieldType;
     property NotNull : boolean read FNotNull write FNotNull;
-    property DefaultValue : string read FDefaultValue write FDefaultValue;
+    property DefaultValue : string read FDefaultValue write SetDefaultValue;
     property Charset : string read FCharset write FCharset;
     property Collate : string read FCollate write FCollate;
 
@@ -114,26 +115,42 @@ begin
 end;
 
 function TDBField.GetFieldSet: string;
+var
+ parts : TStringList;
 begin
-  if (string.isnullorempty(DefaultValue) = false) then
-        Result := Result +' '+DefaultValue;
+ try
+   parts := TStringList.Create;
+   try
 
-   if (NotNull) then
-        Result := Result +' NOT NULL';
+     if (string.isnullorempty(Charset) = FALSE) AND (Charset <> 'NONE') then
+          parts.Add(ifthen(DefaultValue.Trim.StartsWith('CHARACTER SET') = false,'CHARACTER SET ','' ) + Charset);
+
+     if (string.isnullorempty(DefaultValue) = false) then
+       parts.Add(ifthen(DefaultValue.Trim.StartsWith('DEFAULT') = false,'DEFAULT ','' ) + DefaultValue);
+
+     if (NotNull) then
+         parts.Add('NOT NULL');
 
 
+      if (string.isnullorempty(Collate) = FALSE) AND (Collate <> 'NONE') then
+            parts.Add(ifthen(DefaultValue.Trim.StartsWith('COLLATE') = false,'COLLATE ','' ) + Collate);
 
-   if (string.isnullorempty(Charset) = FALSE) AND (Charset <> 'NONE') then
-         Result := Result +' '+Charset;
 
-  if (string.isnullorempty(Collate) = FALSE) AND (Collate <> 'NONE') then
-         Result := Result +' '+Collate;
+      if (parts.Count > 0) then begin
+         Result := ' '+String.Join(' ', Parts.ToStringArray);
+      end
+      else result := '';
 
-         if (string.isNullOrEmpty(Result.Trim()) = false) then
-             Result := ' '+Result.Trim()
-         else Result := '';
+   except on e: exception do begin
+       raise e
+   end;
+   end;
 
-         result := Result.Trim;
+ finally
+    parts.Free;
+ end;
+
+
 
 end;
 
@@ -148,5 +165,16 @@ begin
    Result:= Trim(vName+' '+FieldType+GetFieldSet);
 end;
 
+
+procedure TDBField.SetDefaultValue(const Value: string);
+begin
+  FDefaultValue := Value.Trim;
+
+  if (FDefaultValue.Trim.StartsWith('DEFAULT')) then begin
+     FDefaultValue := Copy(FDefaultValue.Trim,('DEFAULT').Length+1).Trim;
+  end;
+
+
+end;
 
 end.

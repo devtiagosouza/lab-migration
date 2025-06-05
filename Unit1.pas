@@ -59,7 +59,7 @@ procedure TForm1.FormCreate(Sender: TObject);
 begin
  lbTempo.Caption := '';
 
-  MegaMigrator := TMegaMigration.Create('localhost:C:\MFX\DADOS\TESTE_MIGRACAO\MFX.FDB');
+  MegaMigrator := TMegaMigration.Create('localhost:C:\MFX\DADOS\TESTE_MIGRACAO\DEV_DB.FDB');
   MegaMigrator.AddMigration(TMigrationTabelas.Create);
 end;
 

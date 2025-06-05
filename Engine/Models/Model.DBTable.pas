@@ -232,6 +232,8 @@ var
   vIndex, vOtherIndex : TDBIndex;
   script : IScriptBuilder;
   sql : string;
+  vTrigger, vOtherTrigger : TDBTrigger;
+  scriptTriggers : IScriptBuilder;
 begin
    script := TScriptBuilder.Create;
 
@@ -351,6 +353,42 @@ begin
        else begin
           script.AppendLine(vIndex.DDLCreate);
        end;
+   end;
+
+   if (FTriggers.Count > 0) then begin
+      scriptTriggers := TScriptBuilder.Create;
+
+
+       for vTrigger in FTriggers do begin
+
+
+           vOtherTrigger := outro.Triggers.First(function(t : TDBTrigger) : boolean begin
+              result := t.Name = vTrigger.Name;
+           end);
+
+           if (vOtherTrigger <> nil) then begin
+               sql := vTrigger.EqualityScript(vOtherTrigger,[]);
+               scriptTriggers.AppendLine(sql);
+
+               if (string.IsNullOrEmpty(sql) = false) then
+                   scriptTriggers.Append('^');
+
+           end
+           else begin
+              scriptTriggers.AppendLine(vTrigger.DDLCreate)
+                 .Append('^');
+           end;
+       end;
+
+       if (scriptTriggers.AsString <> '') then begin
+
+          script.AppendLine.AppendLine('SET TERM ^ ;').AppendLine;
+          script.AppendLine(scriptTriggers.AsString);
+          script.AppendLine.AppendLine('SET TERM ; ^').AppendLine;
+
+       end;
+
+
    end;
 
 
