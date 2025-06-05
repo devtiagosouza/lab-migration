@@ -15,6 +15,7 @@ interface
     FCollate: string;
     FTableName: string;
     FDomainName: string;
+    FIsPk: boolean;
     procedure SetDefaultValue(const Value: string);
 
  public
@@ -25,6 +26,7 @@ interface
     property DefaultValue : string read FDefaultValue write SetDefaultValue;
     property Charset : string read FCharset write FCharset;
     property Collate : string read FCollate write FCollate;
+    property IsPK : boolean read FIsPk write FIsPk;
 
     function GetFieldSet : string;
 

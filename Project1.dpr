@@ -34,7 +34,7 @@ uses
   Parser.Triggers in 'Engine\Parsers\Parser.Triggers.pas',
   DelphiUnitWriter in 'Engine\DelphiUnitWriter.pas',
   Migration.ClassWriter in 'Migration.ClassWriter.pas',
-  TaskTimer in 'TaskTimer.pas' {$R *.res},
+  TaskTimer in 'TaskTimer.pas',
   MegaMigrator in 'DatabaseMigrator\MegaMigrator.pas',
   Database.Interfaces in 'DatabaseMigrator\Database.Interfaces.pas',
   Database in 'DatabaseMigrator\Database.pas',

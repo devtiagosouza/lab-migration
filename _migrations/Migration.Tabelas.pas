@@ -24,6 +24,8 @@ end;
 
 procedure TMigrationTabelas.Tabela_AJUSTE_ICMS;
 begin
+
+
   Table('CLIENTES')
      .Column('MEU_CAMPO','VARCHAR(10) CHARACTER SET WIN1252 DEFAULT ''TESTANDO'' NOT NULL COLLATE WIN_PTBR')
      .Trigger('CREATE OR ALTER TRIGGER CLIENTES_BI FOR CLIENTES '+sLineBreak+

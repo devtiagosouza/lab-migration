@@ -2,14 +2,24 @@ unit Table.Builder;
 
 interface
 
-uses System.Classes, Model.DBField,Model.DBTable, Model.DBTrigger, DCollections;
+uses System.Classes, Model.DBIndex, Model.DBField,Model.DBTable, Model.DBTrigger, DCollections;
+
+
+type IColumnBuilder = interface
+['{5A27CDB5-C933-4607-8844-311F225F02DB}']
+
+
+end;
+
 
 
 type ITableBuilder = interface
 ['{2702E277-BAC7-4BCD-B629-67E15543D9E2}']
    function New(const aTableName: string): ITableBuilder; overload;
    function SetTable(aTable : TDBTable) : ITableBuilder; overload;
-   function Column(const aColumnName, aTypeAndDefs: string): ITableBuilder;
+   function Column(const aColumnName, TypeDefinition: string): ITableBuilder;
+   function ColumnPK(const aColumnName, TypeDefinition: string; constraintName : string = ''): ITableBuilder;
+
    function Trigger(const aTriggerName: string) : ITableBuilder;
 
    function Build: TDBTable;
@@ -25,12 +35,15 @@ strict private
 
 private
   FTable : TDBTable;
+  FPrimaryKeys : TList<TDBPrimaryKey>;
 
 public
 
      function New(const aTableName: string): ITableBuilder;
      function SetTable(aTable : TDBTable) : ITableBuilder;
-     function Column(const aColumnName, aTypeAndDefs: string): ITableBuilder;
+     function Column(const aColumnName, TypeDefinition: string): ITableBuilder;
+     function ColumnPK(const aColumnName, TypeDefinition: string; constraintName : string = ''): ITableBuilder;
+
 
      function Trigger(const aTriggerDDLCommand: string) : ITableBuilder;
 
@@ -54,8 +67,7 @@ begin
   FTable := nil;
 end;
 
-function TTableBuilder.Column(const aColumnName,
-  aTypeAndDefs: string): ITableBuilder;
+function TTableBuilder.Column(const aColumnName, TypeDefinition: string): ITableBuilder;
   var
  field : TDBField;
  index : integer;
@@ -65,7 +77,7 @@ begin
     result := (f.Name = aColumnName);
  end);
 
- field := TFieldParser.ParseFieldFromDefinition(aColumnName,FTable.Name, aTypeAndDefs);
+ field := TFieldParser.ParseFieldFromDefinition(aColumnName,FTable.Name, TypeDefinition);
  if (field <> nil) then begin
    if (index < 0) then begin
       FTable.Fields.Add(Field);
@@ -80,9 +92,48 @@ begin
 end;
 
 
+function TTableBuilder.ColumnPK(const aColumnName, TypeDefinition: string;
+  constraintName: string): ITableBuilder;
+  var
+   builder : ITableBuilder;
+   field : TDBField;
+   idx : integer;
+   pk : TDBPrimaryKey;
+begin
+ builder := Column(aColumnName, TypeDefinition);
+
+ idx := FTable.Fields.IndexOf(function(f : TDBField) : boolean
+ begin
+    result := (f.Name = aColumnName);
+ end);
+
+ if (idx > -1) then begin
+     FTable.Fields[idx].IsPK := true;
+
+     FTable.Fields.Where(function(p : TDBField) : boolean
+     begin
+        result := p.IsPK = true;
+     end);
+
+
+
+     FTable.PrimaryKeys.Clear;
+     pk := TDBPrimaryKey.Create(constraintName);
+     pk.TableName := FTable.Name;
+     pk.OnFields := FTable.Fields[idx].Name;
+
+     FTable.PrimaryKeys.Add(pk);
+ end;
+
+
+
+
+end;
+
 constructor TTableBuilder.Create;
 begin
   inherited;
+  FPrimaryKeys := TList<TDBPrimaryKey>.Create;
 end;
 
 destructor TTableBuilder.Destroy;
